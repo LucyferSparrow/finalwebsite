@@ -8,6 +8,34 @@
     <link rel="stylesheet" href="styles.css" />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>" />
+    <style>
+        .admin-login { max-width: 400px; margin: 0 auto; }
+        .admin-tabs { display: flex; gap: 8px; margin-bottom: 32px; flex-wrap: wrap; }
+        .admin-tab { padding: 10px 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: var(--text-secondary); cursor: pointer; transition: all 0.3s; }
+        .admin-tab.active { background: rgba(168,85,247,0.2); border-color: rgba(168,85,247,0.5); color: #c4b5fd; }
+        .admin-panel { display: none; }
+        .admin-panel.active { display: block; }
+        .booking-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+        .booking-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .booking-actions button { padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+        .btn-done { background: rgba(34,197,94,0.2); color: #86efac; }
+        .btn-done:hover { background: rgba(34,197,94,0.35); }
+        .btn-pending { background: rgba(234,179,8,0.2); color: #fde047; }
+        .btn-pending:hover { background: rgba(234,179,8,0.35); }
+        .btn-delete { background: rgba(239,68,68,0.2); color: #fca5a5; }
+        .btn-delete:hover { background: rgba(239,68,68,0.35); }
+        .status-badge { padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; }
+        .status-pending { background: rgba(234,179,8,0.15); color: #fde047; }
+        .status-done { background: rgba(34,197,94,0.15); color: #86efac; }
+        .course-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+        .course-item-info h4 { margin: 0 0 4px 0; }
+        .course-item-info p { margin: 0; color: var(--text-secondary); font-size: 0.9rem; }
+        .admin-stat { display: inline-block; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px 24px; margin: 0 12px 12px 0; text-align: center; }
+        .admin-stat .num { font-size: 2rem; font-weight: 700; color: #c4b5fd; }
+        .admin-stat .label { font-size: 0.85rem; color: var(--text-secondary); }
+        #admin-content { display: none; }
+        .seed-notice { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.9rem; color: #c4b5fd; }
+    </style>
 </head>
 
 <body>
@@ -24,144 +52,428 @@
             </a>
             <div class="nav-links" id="nav-links">
                 <a href="index.html">Back to Home</a>
+                <a href="#" id="logout-link" style="display:none;" onclick="logout()">Logout</a>
             </div>
         </div>
     </nav>
 
-    <!-- ═══ Course Upload Section ═══ -->
-    <section class="upload section" id="upload" style="padding-top: 150px; min-height: 100vh;">
+    <!-- ═══ Login Gate ═══ -->
+    <section id="login-section" class="section" style="padding-top: 180px; min-height: 100vh;">
         <div class="container">
-            <div class="section-header reveal">
-                <div class="section-label">Admin Dashboard</div>
-                <h2 class="section-title">Upload a <span class="highlight">Course</span></h2>
-                <p class="section-desc">Create new structured learning content for the Astrology Courses section.</p>
-            </div>
-
-            <div class="upload-wrapper">
-                <div class="reveal-left">
-                    <div class="form-card">
-                        <h3>✦ Course Details</h3>
-                        <form id="upload-form">
-                            <div class="form-group">
-                                <label for="course-title">Course Title</label>
-                                <input type="text" id="course-title" class="form-input"
-                                    placeholder="Enter course title..." required />
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="course-level">Level</label>
-                                    <select id="course-level" class="form-select" required>
-                                        <option value="">Select level...</option>
-                                        <option value="beginner">Beginner</option>
-                                        <option value="intermediate">Intermediate</option>
-                                        <option value="expert">Expert</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="course-author">Instructor Name</label>
-                                    <input type="text" id="course-author" class="form-input"
-                                        placeholder="e.g. Pandit Shastri" required />
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="course-image">Cover Image URL (optional)</label>
-                                <input type="url" id="course-image" class="form-input"
-                                    placeholder="https://example.com/image.jpg" />
-                            </div>
-
-                            <div class="form-group">
-                                <label for="course-content">Syllabus / Content</label>
-                                <textarea id="course-content" class="form-textarea"
-                                    placeholder="Describe the course curriculum..." rows="8" required></textarea>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary form-submit">
-                                Publish Course ✦
-                            </button>
-                        </form>
-
-                        <div class="form-success" id="upload-success">
-                            <div class="success-icon">🎉</div>
-                            <h4>Course Published!</h4>
-                            <p>Your course is now live in the Courses section.</p>
-                        </div>
-                    </div>
+            <div class="admin-login">
+                <div class="section-header reveal">
+                    <div class="section-label">Authentication</div>
+                    <h2 class="section-title">Admin <span class="highlight">Login</span></h2>
                 </div>
-
-                <div class="upload-preview reveal-right">
-                    <div class="preview-card">
-                        <div class="preview-header">
-                            <span class="preview-dot red"></span>
-                            <span class="preview-dot yellow"></span>
-                            <span class="preview-dot green"></span>
-                            <span style="margin-left: 8px;">Live Preview</span>
+                <div class="form-card">
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="admin-password">Password</label>
+                            <input type="password" id="admin-password" class="form-input" placeholder="Enter admin password..." required />
                         </div>
-                        <div class="preview-body" id="preview-body">
-                            <div class="preview-placeholder">
-                                <div class="preview-icon">📝</div>
-                                <p>Start typing to see a live preview<br />of your course card here.</p>
-                            </div>
-                        </div>
-                    </div>
+                        <button type="submit" class="btn btn-primary form-submit" style="width:100%;">Login ✦</button>
+                        <p id="login-error" style="color: #f87171; margin-top: 12px; display: none;"></p>
+                    </form>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ═══ Consultation Bookings Section ═══ -->
-    <section class="section" style="padding-bottom: 100px;">
+    <!-- ═══ Admin Dashboard (hidden until login) ═══ -->
+    <section id="admin-content" class="section" style="padding-top: 150px; min-height: 100vh; padding-bottom: 100px;">
         <div class="container">
             <div class="section-header reveal">
-                <div class="section-label">Bookings</div>
-                <h2 class="section-title">Consultation <span class="highlight">Requests</span></h2>
-                <p class="section-desc">View all submitted consultation bookings.</p>
+                <div class="section-label">Dashboard</div>
+                <h2 class="section-title">Admin <span class="highlight">Panel</span></h2>
             </div>
 
-            <div class="reveal" style="max-width: 900px; margin: 0 auto;">
-                <button onclick="loadConsultations()" class="btn btn-primary" style="margin-bottom: 24px;">
-                    Refresh Bookings ↻
-                </button>
-                <div id="consultations-list" style="display: flex; flex-direction: column; gap: 16px;">
-                    <p style="color: var(--text-secondary); text-align: center;">Click "Refresh Bookings" to load.</p>
+            <!-- Stats -->
+            <div id="admin-stats" style="margin-bottom: 32px;"></div>
+
+            <!-- Tabs -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="consultations">📋 Consultations</button>
+                <button class="admin-tab" data-tab="courses">📚 Courses</button>
+                <button class="admin-tab" data-tab="add-course">➕ Add Course</button>
+            </div>
+
+            <!-- Consultations Panel -->
+            <div class="admin-panel active" id="panel-consultations">
+                <div id="consultations-list">
+                    <p style="color: var(--text-secondary); text-align: center;">Loading consultations...</p>
+                </div>
+            </div>
+
+            <!-- Courses Panel -->
+            <div class="admin-panel" id="panel-courses">
+                <div id="seed-notice" class="seed-notice" style="display:none;">
+                    No courses found in the database. <button onclick="seedDefaultCourses()" class="btn btn-primary" style="padding: 6px 16px; font-size: 0.85rem; margin-left: 8px;">Seed Default Courses</button>
+                </div>
+                <div id="courses-list">
+                    <p style="color: var(--text-secondary); text-align: center;">Loading courses...</p>
+                </div>
+            </div>
+
+            <!-- Add Course Panel -->
+            <div class="admin-panel" id="panel-add-course">
+                <div class="upload-wrapper">
+                    <div class="reveal-left">
+                        <div class="form-card">
+                            <h3>✦ Course Details</h3>
+                            <form id="upload-form">
+                                <div class="form-group">
+                                    <label for="course-title">Course Title</label>
+                                    <input type="text" id="course-title" class="form-input" placeholder="Enter course title..." required />
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="course-level">Level</label>
+                                        <select id="course-level" class="form-select" required>
+                                            <option value="">Select level...</option>
+                                            <option value="beginner">Beginner</option>
+                                            <option value="intermediate">Intermediate</option>
+                                            <option value="expert">Expert</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="course-author">Instructor Name</label>
+                                        <input type="text" id="course-author" class="form-input" placeholder="e.g. Pandit Shastri" required />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="course-image">Cover Image URL (optional)</label>
+                                    <input type="url" id="course-image" class="form-input" placeholder="https://example.com/image.jpg" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="course-content">Syllabus / Content</label>
+                                    <textarea id="course-content" class="form-textarea" placeholder="Describe the course curriculum..." rows="8" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary form-submit">Publish Course ✦</button>
+                            </form>
+                            <div class="form-success" id="upload-success">
+                                <div class="success-icon">🎉</div>
+                                <h4>Course Published!</h4>
+                                <p>Your course is now live in the Courses section.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="upload-preview reveal-right">
+                        <div class="preview-card">
+                            <div class="preview-header">
+                                <span class="preview-dot red"></span>
+                                <span class="preview-dot yellow"></span>
+                                <span class="preview-dot green"></span>
+                                <span style="margin-left: 8px;">Live Preview</span>
+                            </div>
+                            <div class="preview-body" id="preview-body">
+                                <div class="preview-placeholder">
+                                    <div class="preview-icon">📝</div>
+                                    <p>Start typing to see a live preview<br />of your course card here.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <script>
-    async function loadConsultations() {
-        const container = document.getElementById('consultations-list');
-        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading...</p>';
+    let adminToken = localStorage.getItem('jyotish-admin-token') || '';
+
+    // ── Auth ──
+    async function checkAuth() {
+        if (!adminToken) return false;
         try {
-            const res = await fetch('/api/consultation');
+            const res = await fetch('/api/auth', { headers: { 'Authorization': 'Bearer ' + adminToken } });
             const data = await res.json();
-            if (!data.consultations || data.consultations.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No consultation bookings yet.</p>';
-                return;
-            }
-            container.innerHTML = data.consultations.map(c => `
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 8px;">
-                        <div>
-                            <strong style="font-size: 1.1rem;">${c.name}</strong>
-                            <span style="color: var(--text-secondary); margin-left: 8px;">${c.email}</span>
-                        </div>
-                        <span style="background: rgba(168,85,247,0.15); color: #c4b5fd; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem;">${c.type}</span>
-                    </div>
-                    <div style="margin-top: 12px; display: flex; gap: 24px; color: var(--text-secondary); font-size: 0.9rem;">
-                        <span>📅 ${c.date}</span>
-                        <span>🕒 ${c.birth || 'N/A'}</span>
-                        <span>📝 ${new Date(c.created_at).toLocaleDateString()}</span>
-                    </div>
-                    ${c.message ? `<p style="margin-top: 12px; color: var(--text-secondary);">${c.message}</p>` : ''}
-                </div>
-            `).join('');
-        } catch (err) {
-            container.innerHTML = '<p style="color: #f87171; text-align: center;">Failed to load bookings.</p>';
+            return data.valid === true;
+        } catch { return false; }
+    }
+
+    async function initAdmin() {
+        const valid = await checkAuth();
+        if (valid) {
+            showDashboard();
+        } else {
+            adminToken = '';
+            localStorage.removeItem('jyotish-admin-token');
         }
     }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const pw = document.getElementById('admin-password').value;
+        const errEl = document.getElementById('login-error');
+        errEl.style.display = 'none';
+
+        try {
+            const res = await fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pw }),
+            });
+            const data = await res.json();
+            if (data.token) {
+                adminToken = data.token;
+                localStorage.setItem('jyotish-admin-token', adminToken);
+                showDashboard();
+            } else {
+                errEl.textContent = data.error || 'Invalid password';
+                errEl.style.display = 'block';
+            }
+        } catch (err) {
+            errEl.textContent = 'Login failed. Try again.';
+            errEl.style.display = 'block';
+        }
+    });
+
+    function showDashboard() {
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('admin-content').style.display = 'block';
+        document.getElementById('logout-link').style.display = '';
+        loadConsultations();
+        loadCourses();
+    }
+
+    function logout() {
+        adminToken = '';
+        localStorage.removeItem('jyotish-admin-token');
+        document.getElementById('login-section').style.display = '';
+        document.getElementById('admin-content').style.display = 'none';
+        document.getElementById('logout-link').style.display = 'none';
+    }
+
+    // ── Tabs ──
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+        });
+    });
+
+    // ── Consultations ──
+    let consultationsData = [];
+    async function loadConsultations() {
+        const container = document.getElementById('consultations-list');
+        try {
+            const res = await fetch('/api/consultation', { headers: { 'Authorization': 'Bearer ' + adminToken } });
+            const data = await res.json();
+            consultationsData = data.consultations || [];
+            renderConsultations();
+            updateStats();
+        } catch (err) {
+            container.innerHTML = '<p style="color:#f87171;text-align:center;">Failed to load.</p>';
+        }
+    }
+
+    function renderConsultations() {
+        const container = document.getElementById('consultations-list');
+        if (consultationsData.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-secondary);text-align:center;">No consultation bookings yet.</p>';
+            return;
+        }
+        container.innerHTML = consultationsData.map(c => `
+            <div class="booking-card">
+                <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:8px;">
+                    <div>
+                        <strong style="font-size:1.1rem;">${esc(c.name)}</strong>
+                        <span style="color:var(--text-secondary);margin-left:8px;">${esc(c.email)}</span>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <span class="status-badge status-${c.status || 'pending'}">${(c.status || 'pending').toUpperCase()}</span>
+                        <span style="background:rgba(168,85,247,0.15);color:#c4b5fd;padding:4px 12px;border-radius:20px;font-size:0.85rem;">${esc(c.type)}</span>
+                    </div>
+                </div>
+                <div style="margin-top:12px;display:flex;gap:24px;color:var(--text-secondary);font-size:0.9rem;flex-wrap:wrap;">
+                    <span>📅 ${esc(c.date)}</span>
+                    <span>🕒 ${esc(c.birth || 'N/A')}</span>
+                    <span>📝 ${c.created_at ? new Date(c.created_at).toLocaleDateString() : ''}</span>
+                </div>
+                ${c.message ? `<p style="margin-top:12px;color:var(--text-secondary);">${esc(c.message)}</p>` : ''}
+                <div class="booking-actions">
+                    ${(c.status || 'pending') === 'pending'
+                        ? `<button class="btn-done" onclick="markConsultation(${c.id},'done')">✓ Mark Done</button>`
+                        : `<button class="btn-pending" onclick="markConsultation(${c.id},'pending')">↩ Re-open</button>`
+                    }
+                    <button class="btn-delete" onclick="deleteConsultation(${c.id})">✕ Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function markConsultation(id, status) {
+        await fetch('/api/consultation', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+            body: JSON.stringify({ id, status }),
+        });
+        loadConsultations();
+    }
+
+    async function deleteConsultation(id) {
+        if (!confirm('Delete this consultation?')) return;
+        await fetch('/api/consultation', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+            body: JSON.stringify({ id }),
+        });
+        loadConsultations();
+    }
+
+    // ── Courses ──
+    let coursesData = [];
+    async function loadCourses() {
+        const container = document.getElementById('courses-list');
+        try {
+            const res = await fetch('/api/courses');
+            const data = await res.json();
+            coursesData = data.courses || [];
+            renderCourses();
+            updateStats();
+
+            // Show seed notice if empty
+            document.getElementById('seed-notice').style.display = coursesData.length === 0 ? '' : 'none';
+        } catch (err) {
+            container.innerHTML = '<p style="color:#f87171;text-align:center;">Failed to load.</p>';
+        }
+    }
+
+    function renderCourses() {
+        const container = document.getElementById('courses-list');
+        if (coursesData.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-secondary);text-align:center;">No courses yet. Add one or seed defaults.</p>';
+            return;
+        }
+        container.innerHTML = coursesData.map(c => `
+            <div class="course-item">
+                <div class="course-item-info">
+                    <h4>${c.icon || '✨'} ${esc(c.title)}</h4>
+                    <p>${esc(c.level?.toUpperCase() || '')} • By ${esc(c.author || 'Unknown')} • ${esc(c.date || '')}</p>
+                    <p style="margin-top:6px;">${esc((c.content || '').substring(0, 100))}${(c.content||'').length > 100 ? '...' : ''}</p>
+                </div>
+                <button class="btn-delete" onclick="deleteCourse('${esc(c.id)}')">✕ Delete</button>
+            </div>
+        `).join('');
+    }
+
+    async function deleteCourse(id) {
+        if (!confirm('Delete this course?')) return;
+        await fetch('/api/courses', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+            body: JSON.stringify({ id }),
+        });
+        loadCourses();
+    }
+
+    // ── Seed Default Courses ──
+    const defaultCourseSeed = [
+        { title: 'Vedic Astrology for Beginners: The 9 Grahas', level: 'beginner', author: 'Pandit Shastri', content: 'A comprehensive introduction to the foundational building blocks of Jyotish — the Navagrahas (Nine Planets).\n\nIn this course, you will learn the unique significations, karakas, and mythological origins of the Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu. Ideal for those taking their first step into Vedic Astrology.', icon: '🌞' },
+        { title: 'Understanding the 12 Bhavas (Houses)', level: 'beginner', author: 'Dr. Meera Joshi', content: 'Discover the 12 Bhavas of the Vedic Birth Chart. Each house governs specific areas of life from health, wealth, and family to marriage, career, and spiritual liberation (Moksha).\n\nLearn how to map the sky and interpret the basic structure of a Janam Kundli.', icon: '🏠' },
+        { title: 'The Interplay of Yogas & Doshas', level: 'intermediate', author: 'Acharya Vinod', content: 'Move beyond basic planetary placements and explore the complex planetary combinations (Yogas) that shape human destiny.\n\nWe will cover auspicious yogas like Raja Yoga and Dhana Yoga, as well as challenging doshas like Mangal Dosha and Kemadruma Dosha, along with their traditional remedies.', icon: '✨' },
+        { title: 'Panchanga & Muhurta: The DNA of Time', level: 'intermediate', author: 'Ratna Sharma', content: 'Learn the art of Electional Astrology. Understand the 5 limbs of time (Panchanga): Tithi, Vara, Nakshatra, Yoga, and Karana.\n\nThis intermediate course teaches you how to select auspicious timings for marriage, business launches, and important life events based on planetary alignments.', icon: '⏳' },
+        { title: 'Vimshottari Dasha System Masterclass', level: 'expert', author: 'Pandit Shastri', content: 'Master the premier predictive tool in Vedic Astrology — the 120-year Vimshottari Dasha system.\n\nLearn how to calculate, interpret, and predict the timing of significant life events by analyzing Mahadashas, Antardashas, and Pratyantar dashas in correlation with planetary transits (Gochara).', icon: '🕰️' },
+        { title: 'Prashna Shastra: Horary Astrology', level: 'expert', author: 'Dr. Meera Joshi', content: 'An advanced exploration of Prashna Shastra — answering specific questions based on the exact time the question is asked, without needing a birth chart.\n\nWe cover Tajika aspects, the role of the ascending degree, and specific rules for predicting success, failure, theft, illness, and travel.', icon: '❓' },
+    ];
+
+    async function seedDefaultCourses() {
+        for (const course of defaultCourseSeed) {
+            await fetch('/api/courses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+                body: JSON.stringify(course),
+            });
+        }
+        loadCourses();
+    }
+
+    // ── Stats ──
+    function updateStats() {
+        const pending = consultationsData.filter(c => (c.status || 'pending') === 'pending').length;
+        const done = consultationsData.filter(c => c.status === 'done').length;
+        document.getElementById('admin-stats').innerHTML = `
+            <div class="admin-stat"><div class="num">${consultationsData.length}</div><div class="label">Total Bookings</div></div>
+            <div class="admin-stat"><div class="num">${pending}</div><div class="label">Pending</div></div>
+            <div class="admin-stat"><div class="num">${done}</div><div class="label">Completed</div></div>
+            <div class="admin-stat"><div class="num">${coursesData.length}</div><div class="label">Courses</div></div>
+        `;
+    }
+
+    // ── Upload Form (Add Course) ──
+    function initUploadForm() {
+        const form = document.getElementById('upload-form');
+        const success = document.getElementById('upload-success');
+        const previewBody = document.getElementById('preview-body');
+        const titleInput = document.getElementById('course-title');
+        const levelInput = document.getElementById('course-level');
+        const imageInput = document.getElementById('course-image');
+        const contentInput = document.getElementById('course-content');
+
+        function updatePreview() {
+            const title = titleInput.value.trim();
+            const level = levelInput.value;
+            const image = imageInput.value.trim();
+            const content = contentInput.value.trim();
+            if (!title && !content) {
+                previewBody.innerHTML = '<div class="preview-placeholder"><div class="preview-icon">📝</div><p>Start typing to see a live preview<br/>of your course card here.</p></div>';
+                return;
+            }
+            let imageHTML = image ? `<img class="preview-image" src="${image}" alt="Preview" onerror="this.style.display='none'" />` : '';
+            previewBody.innerHTML = `<div class="preview-content">${imageHTML}${level ? `<span class="preview-category">${level.toUpperCase()}</span>` : ''}<h3>${title || 'Untitled Course'}</h3><p class="preview-text">${content || 'Start designing your syllabus...'}</p></div>`;
+        }
+
+        [titleInput, levelInput, imageInput, contentInput].forEach(input => {
+            input.addEventListener('input', updatePreview);
+            input.addEventListener('change', updatePreview);
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const course = {
+                title: titleInput.value.trim(),
+                level: levelInput.value,
+                author: document.getElementById('course-author').value.trim(),
+                image: imageInput.value.trim(),
+                content: contentInput.value.trim(),
+            };
+
+            try {
+                const res = await fetch('/api/courses', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+                    body: JSON.stringify(course),
+                });
+                if (!res.ok) throw new Error('Failed');
+
+                form.style.display = 'none';
+                success.classList.add('show');
+                loadCourses();
+
+                setTimeout(() => {
+                    form.reset();
+                    form.style.display = '';
+                    success.classList.remove('show');
+                    updatePreview();
+                }, 4000);
+            } catch (err) {
+                alert('Failed to publish course. Try again.');
+            }
+        });
+    }
+
+    // ── Utility ──
+    function esc(str) {
+        const d = document.createElement('div');
+        d.textContent = str || '';
+        return d.innerHTML;
+    }
+
+    // ── Init ──
+    initAdmin();
+    initUploadForm();
     </script>
 
     <script src="script.js"></script>

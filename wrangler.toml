@@ -3,6 +3,9 @@ pages_build_output_dir = "./public"
 compatibility_date = "2026-03-16"
 compatibility_flags = ["nodejs_compat"]
 
+[vars]
+ADMIN_PASSWORD = "admin2309@supersecret"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "jyotish-consultations"

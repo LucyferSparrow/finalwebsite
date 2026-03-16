@@ -72,13 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initParticles();
   initNavbar();
   initScrollReveal();
+  fetchCoursesFromAPI();
   initCourseSystem();
   initLevelsPage();
   initCourseViewer();
   initConsultationForm();
-  if (document.getElementById('upload-form')) {
-    initUploadForm();
-  }
   initScrollTop();
   initNewsletterForm();
 });
@@ -276,8 +274,28 @@ function initLevelsPage() {
 }
 
 function getAllCourses() {
-  const stored = JSON.parse(localStorage.getItem('jyotish-courses') || '[]');
-  return [...stored, ...defaultCourses];
+  // Try to get from cache first (populated by async fetch)
+  if (window._coursesFromDB) return window._coursesFromDB;
+  // Fallback to defaults while API loads
+  return [...defaultCourses];
+}
+
+async function fetchCoursesFromAPI() {
+  try {
+    const res = await fetch('/api/courses');
+    const data = await res.json();
+    if (data.courses && data.courses.length > 0) {
+      window._coursesFromDB = data.courses;
+      // Re-render if we're on a page with courses
+      const grid = document.getElementById('courses-grid');
+      if (grid) {
+        const activeFilter = document.querySelector('.filter-btn.active');
+        loadCourses(activeFilter?.dataset?.filter || 'all');
+      }
+    }
+  } catch (e) {
+    // API unavailable, defaults will be used
+  }
 }
 
 function loadCourses(filter = 'all') {
@@ -360,18 +378,19 @@ function initCourseViewer() {
     return;
   }
 
-  const courses = getAllCourses();
-  const course = courses.find(c => c.id === courseId);
+  function renderViewer() {
+    const courses = getAllCourses();
+    const course = courses.find(c => c.id === courseId);
 
-  if (!course) {
-    viewerTitle.textContent = "Course Not Found";
-    return;
-  }
+    if (!course) {
+      viewerTitle.textContent = "Course Not Found";
+      return;
+    }
 
-  const viewerImage = document.getElementById('viewer-image');
-  const viewerLevel = document.getElementById('viewer-level');
-  const viewerAuthor = document.getElementById('viewer-author');
-  const viewerContent = document.getElementById('viewer-content');
+    const viewerImage = document.getElementById('viewer-image');
+    const viewerLevel = document.getElementById('viewer-level');
+    const viewerAuthor = document.getElementById('viewer-author');
+    const viewerContent = document.getElementById('viewer-content');
 
   // Fill content
   if (course.image) {
@@ -388,7 +407,12 @@ function initCourseViewer() {
   });
 
   viewerAuthor.textContent = `${dateFormatted} • By ${course.author || 'Anonymous'}`;
-  viewerContent.textContent = course.content; // Use innerHTML if you plan to support rich text in future
+  viewerContent.textContent = course.content;
+  }
+
+  // Try immediately, then retry after API loads
+  renderViewer();
+  fetchCoursesFromAPI().then(() => renderViewer());
 }
 
 // ── Consultation Form ──
@@ -437,99 +461,6 @@ function initConsultationForm() {
     } catch (err) {
       alert('Failed to book consultation. Please try again.');
     }
-  });
-}
-
-// ── Course Upload Form ──
-function initUploadForm() {
-  const form = document.getElementById('upload-form');
-  const success = document.getElementById('upload-success');
-  const previewBody = document.getElementById('preview-body');
-
-  // Live preview
-  const titleInput = document.getElementById('course-title');
-  const levelInput = document.getElementById('course-level');
-  const imageInput = document.getElementById('course-image');
-  const contentInput = document.getElementById('course-content');
-
-  function updatePreview() {
-    const title = titleInput.value.trim();
-    const level = levelInput.value;
-    const image = imageInput.value.trim();
-    const content = contentInput.value.trim();
-
-    if (!title && !content) {
-      previewBody.innerHTML = `
-        <div class="preview-placeholder">
-          <div class="preview-icon">📝</div>
-          <p>Start typing to see a live preview<br />of your course card here.</p>
-        </div>
-      `;
-      return;
-    }
-
-    let imageHTML = '';
-    if (image) {
-      imageHTML = `<img class="preview-image" src="${image}" alt="Preview" onerror="this.style.display='none'" />`;
-    }
-
-    previewBody.innerHTML = `
-      <div class="preview-content">
-        ${imageHTML}
-        ${level ? `<span class="preview-category">${level.toUpperCase()}</span>` : ''}
-        <h3>${title || 'Untitled Course'}</h3>
-        <p class="preview-text">${content || 'Start designing your syllabus...'}</p>
-      </div>
-    `;
-  }
-
-  [titleInput, levelInput, imageInput, contentInput].forEach(input => {
-    input.addEventListener('input', updatePreview);
-    input.addEventListener('change', updatePreview);
-  });
-
-  // Submit
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const levelIcons = {
-      beginner: '🌱',
-      intermediate: '⚡',
-      expert: '🔥'
-    };
-
-    const course = {
-      id: 'course-' + Date.now(),
-      title: titleInput.value.trim(),
-      level: levelInput.value,
-      author: document.getElementById('course-author').value.trim(),
-      date: new Date().toISOString().split('T')[0],
-      image: imageInput.value.trim(),
-      content: contentInput.value.trim(),
-      icon: levelIcons[levelInput.value] || '✨'
-    };
-
-    // Save to localStorage
-    const courses = JSON.parse(localStorage.getItem('jyotish-courses') || '[]');
-    courses.unshift(course);
-    localStorage.setItem('jyotish-courses', JSON.stringify(courses));
-
-    // Refresh course grid if on main page
-    if (document.getElementById('courses-grid')) {
-      loadCourses(document.querySelector('.filter-btn.active')?.dataset.filter || 'all');
-    }
-
-    // Show success
-    form.style.display = 'none';
-    success.classList.add('show');
-
-    // Reset
-    setTimeout(() => {
-      form.reset();
-      form.style.display = '';
-      success.classList.remove('show');
-      updatePreview();
-    }, 4000);
   });
 }
 
