@@ -110,6 +110,60 @@
         </div>
     </section>
 
+    <!-- ═══ Consultation Bookings Section ═══ -->
+    <section class="section" style="padding-bottom: 100px;">
+        <div class="container">
+            <div class="section-header reveal">
+                <div class="section-label">Bookings</div>
+                <h2 class="section-title">Consultation <span class="highlight">Requests</span></h2>
+                <p class="section-desc">View all submitted consultation bookings.</p>
+            </div>
+
+            <div class="reveal" style="max-width: 900px; margin: 0 auto;">
+                <button onclick="loadConsultations()" class="btn btn-primary" style="margin-bottom: 24px;">
+                    Refresh Bookings ↻
+                </button>
+                <div id="consultations-list" style="display: flex; flex-direction: column; gap: 16px;">
+                    <p style="color: var(--text-secondary); text-align: center;">Click "Refresh Bookings" to load.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+    async function loadConsultations() {
+        const container = document.getElementById('consultations-list');
+        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading...</p>';
+        try {
+            const res = await fetch('/api/consultation');
+            const data = await res.json();
+            if (!data.consultations || data.consultations.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No consultation bookings yet.</p>';
+                return;
+            }
+            container.innerHTML = data.consultations.map(c => `
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <strong style="font-size: 1.1rem;">${c.name}</strong>
+                            <span style="color: var(--text-secondary); margin-left: 8px;">${c.email}</span>
+                        </div>
+                        <span style="background: rgba(168,85,247,0.15); color: #c4b5fd; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem;">${c.type}</span>
+                    </div>
+                    <div style="margin-top: 12px; display: flex; gap: 24px; color: var(--text-secondary); font-size: 0.9rem;">
+                        <span>📅 ${c.date}</span>
+                        <span>🕒 ${c.birth || 'N/A'}</span>
+                        <span>📝 ${new Date(c.created_at).toLocaleDateString()}</span>
+                    </div>
+                    ${c.message ? `<p style="margin-top: 12px; color: var(--text-secondary);">${c.message}</p>` : ''}
+                </div>
+            `).join('');
+        } catch (err) {
+            container.innerHTML = '<p style="color: #f87171; text-align: center;">Failed to load bookings.</p>';
+        }
+    }
+    </script>
+
     <script src="script.js"></script>
 </body>
 

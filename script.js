@@ -404,7 +404,7 @@ function initConsultationForm() {
   const today = new Date().toISOString().split('T')[0];
   dateInput.setAttribute('min', today);
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const data = {
@@ -414,24 +414,29 @@ function initConsultationForm() {
       type: document.getElementById('consult-type').value,
       birth: document.getElementById('consult-birth').value,
       message: document.getElementById('consult-message').value,
-      timestamp: new Date().toISOString()
     };
 
-    // Store in localStorage
-    const consultations = JSON.parse(localStorage.getItem('jyotish-consultations') || '[]');
-    consultations.push(data);
-    localStorage.setItem('jyotish-consultations', JSON.stringify(consultations));
+    try {
+      const res = await fetch('/api/consultation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Server error');
 
-    // Show success
-    form.style.display = 'none';
-    success.classList.add('show');
+      // Show success
+      form.style.display = 'none';
+      success.classList.add('show');
 
-    // Reset after some time
-    setTimeout(() => {
-      form.reset();
-      form.style.display = '';
-      success.classList.remove('show');
-    }, 5000);
+      // Reset after some time
+      setTimeout(() => {
+        form.reset();
+        form.style.display = '';
+        success.classList.remove('show');
+      }, 5000);
+    } catch (err) {
+      alert('Failed to book consultation. Please try again.');
+    }
   });
 }
 
