@@ -14,12 +14,24 @@ mkdirSync(publicDir, { recursive: true });
 // Copy WASM binary from node_modules → engine/ephemeris/ (needed for wrangler bundling)
 const wasmDest = join(__dirname, 'engine', 'ephemeris', 'libswephe.wasm');
 if (!existsSync(wasmDest)) {
-  const wasmSrc = join(__dirname, 'node_modules', '@fusionstrings', 'swisseph-wasi', 'esm', 'generated', 'libswephe.wasm');
-  if (existsSync(wasmSrc)) {
+  // Try multiple known locations for the WASM file
+  const wasmPaths = [
+    join(__dirname, 'node_modules', '@fusionstrings', 'swisseph-wasi', 'wasm', 'libswephe.wasm'),
+    join(__dirname, 'node_modules', '@fusionstrings', 'swisseph-wasi', 'esm', 'generated', 'libswephe.wasm'),
+  ];
+  // Also try resolving via Node's module resolution
+  try {
+    const resolved = import.meta.resolve('@fusionstrings/swisseph-wasi/wasm');
+    const resolvedPath = resolved.startsWith('file://') ? fileURLToPath(resolved) : resolved;
+    wasmPaths.push(resolvedPath);
+  } catch {}
+  const wasmSrc = wasmPaths.find(p => existsSync(p));
+  if (wasmSrc) {
     cpSync(wasmSrc, wasmDest);
     console.log('  ✓ engine/ephemeris/libswephe.wasm (from node_modules)');
   } else {
-    console.error('  ✗ libswephe.wasm not found in node_modules!');
+    console.error('  ✗ libswephe.wasm not found! Searched:');
+    wasmPaths.forEach(p => console.error('    -', p));
     process.exit(1);
   }
 } else {
