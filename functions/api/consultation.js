@@ -4,16 +4,16 @@ export async function onRequestPost(context) {
   const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 
   try {
-    await env.DB.exec(`CREATE TABLE IF NOT EXISTS consultations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      date TEXT NOT NULL,
-      type TEXT NOT NULL,
-      birth TEXT,
-      message TEXT,
-      created_at TEXT DEFAULT (datetime('now'))
-    )`);
+    if (!env.DB) {
+      return new Response(
+        JSON.stringify({ error: 'Database not configured. Check D1 binding in Cloudflare dashboard.' }),
+        { status: 500, headers }
+      );
+    }
+
+    await env.DB.prepare(
+      `CREATE TABLE IF NOT EXISTS consultations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL, date TEXT NOT NULL, type TEXT NOT NULL, birth TEXT, message TEXT, created_at TEXT DEFAULT (datetime('now')))`
+    ).run();
 
     const { name, email, date, type, birth, message } = await request.json();
 
@@ -30,9 +30,9 @@ export async function onRequestPost(context) {
 
     return new Response(JSON.stringify({ success: true }), { headers });
   } catch (error) {
-    console.error('Consultation save error:', error.message);
+    console.error('Consultation save error:', error.message, error.stack);
     return new Response(
-      JSON.stringify({ error: 'Failed to save consultation', message: error.message }),
+      JSON.stringify({ error: 'Failed to save consultation', detail: error.message }),
       { status: 500, headers }
     );
   }
@@ -44,16 +44,16 @@ export async function onRequestGet(context) {
   const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
 
   try {
-    await env.DB.exec(`CREATE TABLE IF NOT EXISTS consultations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      date TEXT NOT NULL,
-      type TEXT NOT NULL,
-      birth TEXT,
-      message TEXT,
-      created_at TEXT DEFAULT (datetime('now'))
-    )`);
+    if (!env.DB) {
+      return new Response(
+        JSON.stringify({ error: 'Database not configured. Check D1 binding in Cloudflare dashboard.' }),
+        { status: 500, headers }
+      );
+    }
+
+    await env.DB.prepare(
+      `CREATE TABLE IF NOT EXISTS consultations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL, date TEXT NOT NULL, type TEXT NOT NULL, birth TEXT, message TEXT, created_at TEXT DEFAULT (datetime('now')))`
+    ).run();
 
     const { results } = await env.DB.prepare(
       'SELECT * FROM consultations ORDER BY created_at DESC'
@@ -61,9 +61,9 @@ export async function onRequestGet(context) {
 
     return new Response(JSON.stringify({ consultations: results }), { headers });
   } catch (error) {
-    console.error('Consultation fetch error:', error.message);
+    console.error('Consultation fetch error:', error.message, error.stack);
     return new Response(
-      JSON.stringify({ error: 'Failed to fetch consultations', message: error.message }),
+      JSON.stringify({ error: 'Failed to fetch consultations', detail: error.message }),
       { status: 500, headers }
     );
   }
