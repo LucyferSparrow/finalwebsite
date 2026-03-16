@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Course Viewer - Jyotish Veda</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>" />
+</head>
+
+<body>
+    <canvas id="particle-canvas"></canvas>
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo">
+                <div class="logo-icon">🔮</div>
+                <span>Jyotish Veda</span>
+            </a>
+            <div class="nav-links" id="nav-links">
+                <a href="index.html">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="viewer-container reveal">
+        <a href="javascript:history.back()" class="viewer-back">← Back</a>
+
+        <div class="viewer-header">
+            <span class="viewer-level" id="viewer-level"></span>
+            <h1 id="viewer-title">Loading...</h1>
+            <div class="viewer-author" id="viewer-author"></div>
+        </div>
+
+        <div class="viewer-image" id="viewer-image"></div>
+
+        <div class="viewer-content" id="viewer-content">
+            <!-- Content populated by JS -->
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

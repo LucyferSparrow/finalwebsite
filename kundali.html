@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Kundali Generator</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="kundali.css?v=3.0">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="stars-bg"></div>
+
+    <main class="app-container">
+        <header class="app-header">
+            <h1><i class="fa-solid fa-moon"></i> Cosmic <span>Kundali</span></h1>
+            <p>Vedic Astrology Diamond Chart Generator</p>
+        </header>
+
+        <section class="input-section glass-panel">
+            <h2 class="section-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Birth Details</h2>
+            <form id="kundali-form" class="kundali-form">
+                <div class="form-group full-width">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" placeholder="Enter name" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="date">Date of Birth</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Time of Birth (24H)</label>
+                        <div class="time-picker-24h" style="display: flex; align-items: center; gap: 5px;">
+                            <input type="number" id="time-hour" min="0" max="23" placeholder="HH" required
+                                style="width: 4rem;">
+                            <span>:</span>
+                            <input type="number" id="time-minute" min="0" max="59" placeholder="MM" required
+                                style="width: 4rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="place">Place of Birth</label>
+                    <div class="place-input-wrapper">
+                        <input type="text" id="place" placeholder="City, Country" required>
+                        <button type="button" id="btn-geocode" class="icon-btn" title="Search Location"><i
+                                class="fa-solid fa-location-dot"></i></button>
+                    </div>
+                    <small id="location-result" class="location-status"></small>
+                </div>
+
+                <!-- Hidden inputs for coordinates -->
+                <input type="hidden" id="lat">
+                <input type="hidden" id="lon">
+                <input type="hidden" id="tzone">
+
+                <button type="submit" id="generate-btn" class="primary-btn pulse-glow">
+                    Generate Chart <i class="fa-solid fa-sparkles"></i>
+                </button>
+            </form>
+        </section>
+
+        <!-- Loader -->
+        <div id="loader" class="loader-container hidden">
+            <div class="spinner"></div>
+            <p>Consulting the stars...</p>
+        </div>
+
+        <section id="results-section" class="results-section hidden">
+
+            <div class="charts-row varga-grid">
+                <!-- Main Chart (Large, Left) -->
+                <div class="chart-panel glass-panel primary-chart">
+                    <div class="panel-header">
+                        <select class="varga-select" data-container="panel-1">
+                            <option value="D1" selected>D1 Rasi (Main)</option>
+                            <option value="D3">D3 Drekkana</option>
+                            <option value="D7">D7 Saptamsha</option>
+                            <option value="D9">D9 Navamsha</option>
+                            <option value="D10">D10 Dashamsha</option>
+                            <option value="D16">D16 Shodashamsha</option>
+                            <option value="D20">D20 Vimshamsha</option>
+                            <option value="D24">D24 Chaturvimshamsha</option>
+                            <option value="D30">D30 Trimshamsha</option>
+                            <option value="D45">D45 Akshavedamsha</option>
+                            <option value="D60">D60 Shashtiamsha</option>
+                            <option value="D81">D81 Navanavamsa</option>
+                        </select>
+                        <button class="icon-btn tooltip-btn" title="Information"><i
+                                class="fa-solid fa-circle-info"></i></button>
+                    </div>
+                    <div class="chart-container" id="panel-1"></div>
+                </div>
+
+                <!-- Chart 2 (Top Middle) -->
+                <div class="chart-panel glass-panel secondary-chart">
+                    <div class="panel-header">
+                        <select class="varga-select" data-container="panel-2">
+                            <option value="D1">D1 Rasi (Main)</option>
+                            <option value="D3">D3 Drekkana</option>
+                            <option value="D7">D7 Saptamsha</option>
+                            <option value="D9" selected>D9 Navamsha</option>
+                            <option value="D10">D10 Dashamsha</option>
+                            <option value="D16">D16 Shodashamsha</option>
+                            <option value="D20">D20 Vimshamsha</option>
+                            <option value="D24">D24 Chaturvimshamsha</option>
+                            <option value="D30">D30 Trimshamsha</option>
+                            <option value="D45">D45 Akshavedamsha</option>
+                            <option value="D60">D60 Shashtiamsha</option>
+                            <option value="D81">D81 Navanavamsa</option>
+                        </select>
+                    </div>
+                    <div class="chart-container" id="panel-2"></div>
+                </div>
+
+                <!-- Chart 3 (Top Right) -->
+                <div class="chart-panel glass-panel secondary-chart">
+                    <div class="panel-header">
+                        <select class="varga-select" data-container="panel-3">
+                            <option value="D1">D1 Rasi (Main)</option>
+                            <option value="D3">D3 Drekkana</option>
+                            <option value="D7">D7 Saptamsha</option>
+                            <option value="D9">D9 Navamsha</option>
+                            <option value="D10" selected>D10 Dashamsha</option>
+                            <option value="D16">D16 Shodashamsha</option>
+                            <option value="D20">D20 Vimshamsha</option>
+                            <option value="D24">D24 Chaturvimshamsha</option>
+                            <option value="D30">D30 Trimshamsha</option>
+                            <option value="D45">D45 Akshavedamsha</option>
+                            <option value="D60">D60 Shashtiamsha</option>
+                            <option value="D81">D81 Navanavamsa</option>
+                        </select>
+                    </div>
+                    <div class="chart-container" id="panel-3"></div>
+                </div>
+
+                <!-- Chart 4 (Bottom Middle) -->
+                <div class="chart-panel glass-panel secondary-chart">
+                    <div class="panel-header">
+                        <select class="varga-select" data-container="panel-4">
+                            <option value="D1">D1 Rasi (Main)</option>
+                            <option value="D3">D3 Drekkana</option>
+                            <option value="D7">D7 Saptamsha</option>
+                            <option value="D9">D9 Navamsha</option>
+                            <option value="D10">D10 Dashamsha</option>
+                            <option value="D16">D16 Shodashamsha</option>
+                            <option value="D20">D20 Vimshamsha</option>
+                            <option value="D24">D24 Chaturvimshamsha</option>
+                            <option value="D30">D30 Trimshamsha</option>
+                            <option value="D45">D45 Akshavedamsha</option>
+                            <option value="D60" selected>D60 Shashtiamsha</option>
+                            <option value="D81">D81 Navanavamsa</option>
+                        </select>
+                    </div>
+                    <div class="chart-container" id="panel-4"></div>
+                </div>
+
+                <!-- Chart 5 (Bottom Right) -->
+                <div class="chart-panel glass-panel secondary-chart">
+                    <div class="panel-header">
+                        <select class="varga-select" data-container="panel-5">
+                            <option value="D1">D1 Rasi (Main)</option>
+                            <option value="D3" selected>D3 Drekkana</option>
+                            <option value="D7">D7 Saptamsha</option>
+                            <option value="D9">D9 Navamsha</option>
+                            <option value="D10">D10 Dashamsha</option>
+                            <option value="D16">D16 Shodashamsha</option>
+                            <option value="D20">D20 Vimshamsha</option>
+                            <option value="D24">D24 Chaturvimshamsha</option>
+                            <option value="D30">D30 Trimshamsha</option>
+                            <option value="D45">D45 Akshavedamsha</option>
+                            <option value="D60">D60 Shashtiamsha</option>
+                            <option value="D81">D81 Navanavamsa</option>
+                        </select>
+                    </div>
+                    <div class="chart-container" id="panel-5"></div>
+                </div>
+            </div>
+
+            <div class="table-panel glass-panel" style="margin-top: 20px;">
+                <div class="panel-header">
+                    <h3>Planetary Positions (Graha Info)</h3>
+                </div>
+                <div class="table-container">
+                    <table class="positions-table" id="positions-table">
+                        <thead>
+                            <tr>
+                                <th>Body</th>
+                                <th>Longitude</th>
+                                <th>Sign</th>
+                                <th>Nakshatra</th>
+                                <th>Pada</th>
+                                <th>Navamsha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table rows injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bottom-modules-row"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                <!-- Panchang Module -->
+                <div class="panchang-panel glass-panel">
+                    <div class="panel-header">
+                        <h3>Panchang (Daily Elements)</h3>
+                    </div>
+                    <div class="panchang-content" id="panchang-container"
+                        style="display: flex; flex-direction: column; gap: 10px;">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Vimshottari Dasha Module -->
+                <div class="dasha-panel glass-panel">
+                    <div class="panel-header">
+                        <h3>Vimshottari Mahadasha</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="positions-table" id="dasha-table">
+                            <thead>
+                                <tr>
+                                    <th>Mahadasha Lord</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Table rows injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="kundali.js?v=3.0"></script>
+</body>
+
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Courses - Jyotish Veda</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>" />
+</head>
+
+<body>
+    <!-- Particle Background -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- ═══ Navigation ═══ -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo">
+                <div class="logo-icon">🔮</div>
+                <span>Jyotish Veda</span>
+            </a>
+            <div class="nav-links" id="nav-links">
+                <a href="index.html">Home</a>
+                <a href="admin.html">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══ Courses Selection Section ═══ -->
+    <section class="courses section" style="padding-top: 150px; min-height: 100vh;">
+        <div class="container">
+            <div class="section-header reveal">
+                <div class="section-label">Curriculum</div>
+                <h2 class="section-title" id="levels-page-title"><span class="highlight">Level</span> Courses</h2>
+                <p class="section-desc">Explore the detailed lessons and modules available for this level of study.</p>
+            </div>
+
+            <div class="courses-grid reveal" id="courses-grid">
+                <!-- JS dynamically populates this based on URL parameter ?level=beginner -->
+            </div>
+
+            <div style="text-align: center; margin-top: 60px;" class="reveal">
+                <a href="index.html#courses" class="btn btn-secondary">← Back to Levels</a>
+            </div>
+        </div>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
