@@ -274,23 +274,25 @@ function initLevelsPage() {
 }
 
 function getAllCourses() {
-  // Try to get from cache first (populated by async fetch)
-  if (window._coursesFromDB) return window._coursesFromDB;
-  // Fallback to defaults while API loads
-  return [...defaultCourses];
+  const dbCourses = window._coursesFromDB || [];
+  // Merge: DB courses first, then defaults that aren't already in DB
+  const dbIds = new Set(dbCourses.map(c => c.id));
+  const merged = [...dbCourses, ...defaultCourses.filter(c => !dbIds.has(c.id))];
+  return merged;
 }
 
 async function fetchCoursesFromAPI() {
   try {
     const res = await fetch('/api/courses');
     const data = await res.json();
-    if (data.courses && data.courses.length > 0) {
+    if (data.courses) {
       window._coursesFromDB = data.courses;
-      // Re-render if we're on a page with courses
+      // Re-render if we're on a page with courses grid
       const grid = document.getElementById('courses-grid');
       if (grid) {
         const activeFilter = document.querySelector('.filter-btn.active');
-        loadCourses(activeFilter?.dataset?.filter || 'all');
+        const levelParam = new URLSearchParams(window.location.search).get('level');
+        loadCourses(activeFilter?.dataset?.filter || levelParam || 'all');
       }
     }
   } catch (e) {

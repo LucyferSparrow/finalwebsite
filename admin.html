@@ -232,8 +232,8 @@
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('admin-content').style.display = 'block';
         document.getElementById('logout-link').style.display = '';
-        loadConsultations();
-        loadCourses();
+        adminLoadConsultations();
+        adminLoadCourses();
     }
 
     function logout() {
@@ -256,7 +256,7 @@
 
     // ── Consultations ──
     let consultationsData = [];
-    async function loadConsultations() {
+    async function adminLoadConsultations() {
         const container = document.getElementById('consultations-list');
         try {
             const res = await fetch('/api/consultation', { headers: { 'Authorization': 'Bearer ' + adminToken } });
@@ -310,7 +310,7 @@
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
             body: JSON.stringify({ id, status }),
         });
-        loadConsultations();
+        adminLoadConsultations();
     }
 
     async function deleteConsultation(id) {
@@ -320,12 +320,12 @@
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
             body: JSON.stringify({ id }),
         });
-        loadConsultations();
+        adminLoadConsultations();
     }
 
     // ── Courses ──
     let coursesData = [];
-    async function loadCourses() {
+    async function adminLoadCourses() {
         const container = document.getElementById('courses-list');
         try {
             const res = await fetch('/api/courses');
@@ -366,7 +366,7 @@
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
             body: JSON.stringify({ id }),
         });
-        loadCourses();
+        adminLoadCourses();
     }
 
     // ── Seed Default Courses ──
@@ -387,7 +387,7 @@
                 body: JSON.stringify(course),
             });
         }
-        loadCourses();
+        adminLoadCourses();
     }
 
     // ── Stats ──
@@ -450,7 +450,7 @@
 
                 form.style.display = 'none';
                 success.classList.add('show');
-                loadCourses();
+                adminLoadCourses();
 
                 setTimeout(() => {
                     form.reset();
