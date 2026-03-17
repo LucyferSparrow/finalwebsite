@@ -69,6 +69,10 @@
                 <button type="submit" id="generate-btn" class="primary-btn pulse-glow">
                     Generate Chart <i class="fa-solid fa-sparkles"></i>
                 </button>
+                <button type="button" id="import-btn" class="primary-btn" style="background: rgba(139,95,191,0.3); border: 1px solid rgba(139,95,191,0.4);" onclick="document.getElementById('import-file').click()">
+                    Import Chart <i class="fa-solid fa-file-import"></i>
+                </button>
+                <input type="file" id="import-file" accept=".jyotish,.json,.txt" style="display:none">
             </form>
         </section>
 
@@ -79,6 +83,12 @@
         </div>
 
         <section id="results-section" class="results-section hidden">
+
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+                <button type="button" id="export-btn" class="primary-btn" style="background: rgba(139,95,191,0.3); border: 1px solid rgba(139,95,191,0.4); padding: 10px 20px; font-size: 0.9rem;">
+                    Export Chart <i class="fa-solid fa-file-export"></i>
+                </button>
+            </div>
 
             <div class="charts-row varga-grid">
                 <!-- Main Chart (Large, Left) -->
