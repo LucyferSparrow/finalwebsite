@@ -61,10 +61,30 @@
                     <small id="location-result" class="location-status"></small>
                 </div>
 
-                <!-- Hidden inputs for coordinates -->
-                <input type="hidden" id="lat">
-                <input type="hidden" id="lon">
-                <input type="hidden" id="tzone">
+                <!-- Coordinates toggle -->
+                <div class="form-group full-width" style="margin-top: 4px;">
+                    <label class="toggle-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary);">
+                        <input type="checkbox" id="manual-coords-toggle" style="accent-color: var(--accent-primary); width: 16px; height: 16px;">
+                        Enter coordinates manually
+                    </label>
+                </div>
+                <div id="manual-coords" class="form-row" style="display: none;">
+                    <div class="form-group">
+                        <label for="lat">Latitude</label>
+                        <input type="number" id="lat" step="any" placeholder="e.g. 28.6353">
+                    </div>
+                    <div class="form-group">
+                        <label for="lon">Longitude</label>
+                        <input type="number" id="lon" step="any" placeholder="e.g. 77.2250">
+                    </div>
+                    <div class="form-group">
+                        <label for="tzone">Timezone (UTC±)</label>
+                        <input type="number" id="tzone" step="0.5" placeholder="e.g. 5.5">
+                    </div>
+                </div>
+                <input type="hidden" id="lat-hidden">
+                <input type="hidden" id="lon-hidden">
+                <input type="hidden" id="tzone-hidden">
 
                 <button type="submit" id="generate-btn" class="primary-btn pulse-glow">
                     Generate Chart <i class="fa-solid fa-sparkles"></i>

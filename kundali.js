@@ -8,6 +8,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const latInp = document.getElementById('lat');
     const lonInp = document.getElementById('lon');
     const tzoneInp = document.getElementById('tzone');
+    const latHidden = document.getElementById('lat-hidden');
+    const lonHidden = document.getElementById('lon-hidden');
+    const tzoneHidden = document.getElementById('tzone-hidden');
+    const manualToggle = document.getElementById('manual-coords-toggle');
+    const manualCoordsDiv = document.getElementById('manual-coords');
+
+    // Toggle manual coordinates entry
+    manualToggle.addEventListener('change', () => {
+        const manual = manualToggle.checked;
+        manualCoordsDiv.style.display = manual ? '' : 'none';
+        // When switching to manual, pre-fill from geocoded values if available
+        if (manual && latHidden.value) {
+            latInp.value = latInp.value || latHidden.value;
+            lonInp.value = lonInp.value || lonHidden.value;
+            tzoneInp.value = tzoneInp.value || tzoneHidden.value;
+        }
+    });
+
+    // Helper to get current lat/lon/tzone regardless of mode
+    function getCoordinates() {
+        if (manualToggle.checked) {
+            return {
+                lat: parseFloat(latInp.value),
+                lon: parseFloat(lonInp.value),
+                tzone: parseFloat(tzoneInp.value)
+            };
+        }
+        return {
+            lat: parseFloat(latHidden.value),
+            lon: parseFloat(lonHidden.value),
+            tzone: parseFloat(tzoneHidden.value)
+        };
+    }
 
     let locationTimezone = null; // IANA timezone name (e.g. "America/New_York")
 
@@ -52,8 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if(data && data.length > 0) {
                 const loc = data[0];
-                latInp.value = loc.lat;
-                lonInp.value = loc.lon;
+                latHidden.value = loc.lat;
+                lonHidden.value = loc.lon;
                 
                 // Fetch actual timezone for the location
                 locationResult.textContent = "Found location, detecting timezone...";
@@ -61,13 +94,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (ianaTz) {
                     locationTimezone = ianaTz;
                     const offset = getOffsetForDate(ianaTz, new Date());
-                    tzoneInp.value = offset;
+                    tzoneHidden.value = offset;
                     locationResult.textContent = `Found: ${loc.display_name.split(',')[0]} (${parseFloat(loc.lat).toFixed(2)}, ${parseFloat(loc.lon).toFixed(2)}) · TZ: ${ianaTz}`;
                 } else {
                     // Fallback: approximate from longitude
                     locationTimezone = null;
                     const approxOffset = Math.round(parseFloat(loc.lon) / 15);
-                    tzoneInp.value = approxOffset;
+                    tzoneHidden.value = approxOffset;
                     locationResult.textContent = `Found: ${loc.display_name.split(',')[0]} (${parseFloat(loc.lat).toFixed(2)}, ${parseFloat(loc.lon).toFixed(2)}) · TZ: ~UTC${approxOffset >= 0 ? '+' : ''}${approxOffset}`;
                 }
                 locationResult.className = "location-status";
@@ -110,11 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const lat = parseFloat(document.getElementById('lat').value);
-        const lon = parseFloat(document.getElementById('lon').value);
+        const coords = getCoordinates();
+        const lat = coords.lat;
+        const lon = coords.lon;
         
         if(isNaN(lat) || isNaN(lon)) {
-            alert("Please search for a valid location first.");
+            alert(manualToggle.checked ? "Please enter valid coordinates." : "Please search for a valid location first.");
             return;
         }
 
@@ -131,12 +165,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Compute timezone offset for the birth location + birth date (handles DST)
         let tzoneOffsetHours;
-        if (locationTimezone) {
+        if (manualToggle.checked && !isNaN(coords.tzone)) {
+            // User entered timezone manually — use as-is
+            tzoneOffsetHours = coords.tzone;
+        } else if (locationTimezone) {
             const birthDate = new Date(year, month - 1, day, hour, minute);
             tzoneOffsetHours = getOffsetForDate(locationTimezone, birthDate);
         } else {
-            // Fallback: use value from hidden input (set during geocode or import)
-            tzoneOffsetHours = parseFloat(tzoneInp.value);
+            tzoneOffsetHours = parseFloat(tzoneHidden.value);
             if (isNaN(tzoneOffsetHours)) {
                 tzoneOffsetHours = -(new Date().getTimezoneOffset() / 60);
             }
@@ -398,9 +434,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('time-minute').value = parseInt(m);
             }
             if (place) document.getElementById('place').value = place;
-            latInp.value = lat;
-            lonInp.value = lon;
-            if (tzone) tzoneInp.value = tzone;
+            latHidden.value = lat;
+            lonHidden.value = lon;
+            if (tzone) tzoneHidden.value = tzone;
+            // Clear manual mode so import uses these values
+            manualToggle.checked = false;
+            manualCoordsDiv.style.display = 'none';
+            locationTimezone = null;
 
             locationResult.textContent = `Imported: ${place || 'Unknown'} (Lat: ${parseFloat(lat).toFixed(2)}, Lon: ${parseFloat(lon).toFixed(2)})`;
             locationResult.className = 'location-status';
