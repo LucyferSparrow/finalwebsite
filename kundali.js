@@ -8,6 +8,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const latInp = document.getElementById('lat');
     const lonInp = document.getElementById('lon');
     const tzoneInp = document.getElementById('tzone');
+
+    let locationTimezone = null; // IANA timezone name (e.g. "America/New_York")
+
+    // Compute UTC offset (in hours) for a specific date in a given IANA timezone
+    function getOffsetForDate(timeZone, date) {
+        const utc = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+        const local = new Date(date.toLocaleString('en-US', { timeZone }));
+        return (local - utc) / 3600000; // hours, handles half-hours like +5:30
+    }
+
+    // Fetch IANA timezone for given coordinates
+    async function fetchTimezone(lat, lon) {
+        try {
+            const res = await fetch(`https://timeapi.io/api/timezone/coordinate?latitude=${lat}&longitude=${lon}`);
+            const data = await res.json();
+            if (data.timeZone) return data.timeZone;
+        } catch (e) { /* fall through */ }
+        return null;
+    }
     
     // Auto-fill some default demo data
     document.getElementById('date').valueAsDate = new Date();
@@ -36,15 +55,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 latInp.value = loc.lat;
                 lonInp.value = loc.lon;
                 
-                // Get offset timezone (approximate from user location or standard logic)
-                // In production, we'd use a Lat/Lon to TimeZone API. 
-                // For now, we assume local timezone of the user's browser for simplicity, 
-                // but let's try to get approximate longitude based timezone if it's far.
-                // Or best: use the browser timezone offset
-                const offset = -(new Date().getTimezoneOffset() / 60);
-                tzoneInp.value = offset;
-                
-                locationResult.textContent = `Found: ${loc.display_name.split(',')[0]} (Lat: ${parseFloat(loc.lat).toFixed(2)}, Lon: ${parseFloat(loc.lon).toFixed(2)})`;
+                // Fetch actual timezone for the location
+                locationResult.textContent = "Found location, detecting timezone...";
+                const ianaTz = await fetchTimezone(loc.lat, loc.lon);
+                if (ianaTz) {
+                    locationTimezone = ianaTz;
+                    const offset = getOffsetForDate(ianaTz, new Date());
+                    tzoneInp.value = offset;
+                    locationResult.textContent = `Found: ${loc.display_name.split(',')[0]} (${parseFloat(loc.lat).toFixed(2)}, ${parseFloat(loc.lon).toFixed(2)}) · TZ: ${ianaTz}`;
+                } else {
+                    // Fallback: approximate from longitude
+                    locationTimezone = null;
+                    const approxOffset = Math.round(parseFloat(loc.lon) / 15);
+                    tzoneInp.value = approxOffset;
+                    locationResult.textContent = `Found: ${loc.display_name.split(',')[0]} (${parseFloat(loc.lat).toFixed(2)}, ${parseFloat(loc.lon).toFixed(2)}) · TZ: ~UTC${approxOffset >= 0 ? '+' : ''}${approxOffset}`;
+                }
                 locationResult.className = "location-status";
             } else {
                 locationResult.textContent = "Location not found. Try 'City, Country'.";
@@ -104,8 +129,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const [year, month, day] = dateStr.split('-').map(Number);
         
-        // The Javascript timezone offset is in minutes (UTC - Local). So for IST (+5:30), it is -330
-        const tzoneOffsetHours = -(new Date().getTimezoneOffset() / 60);
+        // Compute timezone offset for the birth location + birth date (handles DST)
+        let tzoneOffsetHours;
+        if (locationTimezone) {
+            const birthDate = new Date(year, month - 1, day, hour, minute);
+            tzoneOffsetHours = getOffsetForDate(locationTimezone, birthDate);
+        } else {
+            // Fallback: use value from hidden input (set during geocode or import)
+            tzoneOffsetHours = parseFloat(tzoneInp.value);
+            if (isNaN(tzoneOffsetHours)) {
+                tzoneOffsetHours = -(new Date().getTimezoneOffset() / 60);
+            }
+        }
 
         const payload = {
             year: year,
