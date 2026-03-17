@@ -68,11 +68,11 @@ const defaultCourses = [
 ];
 
 // ── Initialize App ──
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initParticles();
   initNavbar();
   initScrollReveal();
-  fetchCoursesFromAPI();
+  await fetchCoursesFromAPI();
   initCourseSystem();
   initLevelsPage();
   initCourseViewer();
@@ -287,13 +287,6 @@ async function fetchCoursesFromAPI() {
     const data = await res.json();
     if (data.courses) {
       window._coursesFromDB = data.courses;
-      // Re-render if we're on a page with courses grid
-      const grid = document.getElementById('courses-grid');
-      if (grid) {
-        const activeFilter = document.querySelector('.filter-btn.active');
-        const levelParam = new URLSearchParams(window.location.search).get('level');
-        loadCourses(activeFilter?.dataset?.filter || levelParam || 'all');
-      }
     }
   } catch (e) {
     // API unavailable, defaults will be used
@@ -412,9 +405,8 @@ function initCourseViewer() {
   viewerContent.textContent = course.content;
   }
 
-  // Try immediately, then retry after API loads
+  // API data already loaded before init, render once
   renderViewer();
-  fetchCoursesFromAPI().then(() => renderViewer());
 }
 
 // ── Consultation Form ──
