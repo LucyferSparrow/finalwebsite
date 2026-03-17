@@ -100,6 +100,35 @@ export async function onRequestDelete(context) {
   }
 }
 
+// PATCH /api/courses — admin only, update a course
+export async function onRequestPatch(context) {
+  const { request, env } = context;
+  const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+
+  try {
+    if (!await verifyAdmin(request, env)) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
+    }
+
+    const { id, title, level, author, image, content, icon } = await request.json();
+    if (!id) {
+      return new Response(JSON.stringify({ error: 'Course id required' }), { status: 400, headers });
+    }
+
+    await ensureTable(env.DB);
+    const levelIcons = { beginner: '🌱', intermediate: '⚡', expert: '🔥' };
+
+    await env.DB.prepare(
+      'UPDATE courses SET title = ?, level = ?, author = ?, image = ?, content = ?, icon = ? WHERE id = ?'
+    ).bind(title || '', level || '', author || '', image || '', content || '', icon || levelIcons[level] || '✨', id).run();
+
+    return new Response(JSON.stringify({ success: true }), { headers });
+  } catch (error) {
+    console.error('Courses PATCH error:', error.message);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers });
+  }
+}
+
 export async function onRequestOptions() {
   return new Response(null, {
     headers: {

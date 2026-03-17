@@ -274,11 +274,12 @@ function initLevelsPage() {
 }
 
 function getAllCourses() {
-  const dbCourses = window._coursesFromDB || [];
-  // Merge: DB courses first, then defaults that aren't already in DB
-  const dbIds = new Set(dbCourses.map(c => c.id));
-  const merged = [...dbCourses, ...defaultCourses.filter(c => !dbIds.has(c.id))];
-  return merged;
+  // If API has loaded, use only DB courses (no hardcoded fallback)
+  if (window._coursesAPILoaded) {
+    return window._coursesFromDB || [];
+  }
+  // API hasn't responded yet, show defaults
+  return [...defaultCourses];
 }
 
 async function fetchCoursesFromAPI() {
@@ -287,6 +288,7 @@ async function fetchCoursesFromAPI() {
     const data = await res.json();
     if (data.courses) {
       window._coursesFromDB = data.courses;
+      window._coursesAPILoaded = true;
     }
   } catch (e) {
     // API unavailable, defaults will be used

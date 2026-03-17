@@ -35,6 +35,12 @@
         .admin-stat .label { font-size: 0.85rem; color: var(--text-secondary); }
         #admin-content { display: none; }
         .seed-notice { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.9rem; color: #c4b5fd; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.active { display: flex; }
+        .modal-box { background: var(--bg-primary, #1a1a2e); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 32px; max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; }
+        .modal-box h3 { margin-top: 0; }
+        .btn-edit { background: rgba(59,130,246,0.2); color: #93c5fd; }
+        .btn-edit:hover { background: rgba(59,130,246,0.35); }
     </style>
 </head>
 
@@ -354,7 +360,10 @@
                     <p>${esc(c.level?.toUpperCase() || '')} • By ${esc(c.author || 'Unknown')} • ${esc(c.date || '')}</p>
                     <p style="margin-top:6px;">${esc((c.content || '').substring(0, 100))}${(c.content||'').length > 100 ? '...' : ''}</p>
                 </div>
-                <button class="btn-delete" onclick="deleteCourse('${esc(c.id)}')">✕ Delete</button>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn-edit booking-actions" style="padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:0.85rem;" onclick="openEditModal('${esc(c.id)}')">✏️ Edit</button>
+                    <button class="btn-delete" onclick="deleteCourse('${esc(c.id)}')">✕ Delete</button>
+                </div>
             </div>
         `).join('');
     }
@@ -474,6 +483,92 @@
     // ── Init ──
     initAdmin();
     initUploadForm();
+    </script>
+
+    <!-- Edit Course Modal -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal-box">
+            <h3>✏️ Edit Course</h3>
+            <form id="edit-course-form">
+                <input type="hidden" id="edit-id" />
+                <div class="form-group">
+                    <label for="edit-title">Title</label>
+                    <input type="text" id="edit-title" class="form-input" required />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-level">Level</label>
+                        <select id="edit-level" class="form-select" required>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="expert">Expert</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-author">Instructor</label>
+                        <input type="text" id="edit-author" class="form-input" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-image">Cover Image URL</label>
+                    <input type="url" id="edit-image" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label for="edit-content">Content</label>
+                    <textarea id="edit-content" class="form-textarea" rows="6"></textarea>
+                </div>
+                <div style="display:flex;gap:12px;margin-top:16px;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" style="flex:1;" onclick="closeEditModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function openEditModal(id) {
+        const course = coursesData.find(c => c.id === id);
+        if (!course) return;
+        document.getElementById('edit-id').value = course.id;
+        document.getElementById('edit-title').value = course.title || '';
+        document.getElementById('edit-level').value = course.level || 'beginner';
+        document.getElementById('edit-author').value = course.author || '';
+        document.getElementById('edit-image').value = course.image || '';
+        document.getElementById('edit-content').value = course.content || '';
+        document.getElementById('edit-modal').classList.add('active');
+    }
+
+    function closeEditModal() {
+        document.getElementById('edit-modal').classList.remove('active');
+    }
+
+    document.getElementById('edit-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('edit-modal')) closeEditModal();
+    });
+
+    document.getElementById('edit-course-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            id: document.getElementById('edit-id').value,
+            title: document.getElementById('edit-title').value.trim(),
+            level: document.getElementById('edit-level').value,
+            author: document.getElementById('edit-author').value.trim(),
+            image: document.getElementById('edit-image').value.trim(),
+            content: document.getElementById('edit-content').value.trim(),
+        };
+        try {
+            const res = await fetch('/api/courses', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+                body: JSON.stringify(data),
+            });
+            if (!res.ok) throw new Error('Failed');
+            closeEditModal();
+            adminLoadCourses();
+        } catch (err) {
+            alert('Failed to update course.');
+        }
+    });
     </script>
 
     <script src="script.js"></script>
