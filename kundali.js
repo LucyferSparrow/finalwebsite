@@ -57,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     let currentVargasData = null;
-    let lastChartResult = null;  // full API response for export
     let lastBirthDetails = null; // birth details for export
 
     // Listen for dropdown changes to update individual charts immediately
@@ -134,7 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
-            // Store for export
             lastBirthDetails = {
                 name: document.getElementById('name').value,
                 date: dateStr,
@@ -145,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 lon: lon,
                 tzone: tzoneOffsetHours
             };
-            lastChartResult = data;
 
             // Save vargas data to state and render based on dropdowns
             currentVargasData = data.vargas_charts;
@@ -308,73 +305,77 @@ document.addEventListener('DOMContentLoaded', () => {
         return pArr.join(", ");
     }
 
-    // ── Export Chart ──
+    // ── Export Chart (plain text birth details) ──
     document.getElementById('export-btn').addEventListener('click', () => {
-        if (!lastBirthDetails || !lastChartResult) {
+        if (!lastBirthDetails) {
             alert('Generate a chart first before exporting.');
             return;
         }
-        const exportData = {
-            format: 'jyotish-veda-chart',
-            version: 1,
-            birth: lastBirthDetails,
-            chart: lastChartResult
-        };
-        const json = JSON.stringify(exportData, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
+        const b = lastBirthDetails;
+        const lines = [
+            '── Jyotish Veda · Birth Details ──',
+            '',
+            `Name: ${b.name}`,
+            `Date: ${b.date}`,
+            `Time: ${String(b.hour).padStart(2,'0')}:${String(b.minute).padStart(2,'0')}`,
+            `Place: ${b.place}`,
+            `Latitude: ${b.lat}`,
+            `Longitude: ${b.lon}`,
+            `Timezone: ${b.tzone}`,
+        ];
+        const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        const safeName = (lastBirthDetails.name || 'chart').replace(/[^a-zA-Z0-9]/g, '_');
+        const safeName = (b.name || 'chart').replace(/[^a-zA-Z0-9]/g, '_');
         a.href = url;
-        a.download = `${safeName}_kundali.jyotish`;
+        a.download = `${safeName}_kundali.txt`;
         a.click();
         URL.revokeObjectURL(url);
     });
 
-    // ── Import Chart ──
+    // ── Import Chart (parse txt back into form & auto-generate) ──
     document.getElementById('import-file').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         try {
             const text = await file.text();
-            const data = JSON.parse(text);
-            if (!data.birth) {
-                alert('Invalid chart file — no birth details found.');
+            const get = (key) => {
+                const m = text.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'));
+                return m ? m[1].trim() : null;
+            };
+            const name = get('Name');
+            const date = get('Date');
+            const time = get('Time');
+            const place = get('Place');
+            const lat = get('Latitude');
+            const lon = get('Longitude');
+            const tzone = get('Timezone');
+
+            if (!lat || !lon) {
+                alert('Invalid file — could not find birth details.');
                 return;
             }
-            const b = data.birth;
-            // Fill form fields
-            if (b.name) document.getElementById('name').value = b.name;
-            if (b.date) document.getElementById('date').value = b.date;
-            if (b.hour != null) document.getElementById('time-hour').value = b.hour;
-            if (b.minute != null) document.getElementById('time-minute').value = b.minute;
-            if (b.place) document.getElementById('place').value = b.place;
-            if (b.lat != null) latInp.value = b.lat;
-            if (b.lon != null) lonInp.value = b.lon;
-            if (b.tzone != null) tzoneInp.value = b.tzone;
+            if (name) document.getElementById('name').value = name;
+            if (date) document.getElementById('date').value = date;
+            if (time) {
+                const [h, m] = time.split(':');
+                document.getElementById('time-hour').value = parseInt(h);
+                document.getElementById('time-minute').value = parseInt(m);
+            }
+            if (place) document.getElementById('place').value = place;
+            latInp.value = lat;
+            lonInp.value = lon;
+            if (tzone) tzoneInp.value = tzone;
 
-            locationResult.textContent = `Imported: ${b.place || 'Unknown'} (Lat: ${parseFloat(b.lat).toFixed(2)}, Lon: ${parseFloat(b.lon).toFixed(2)})`;
+            locationResult.textContent = `Imported: ${place || 'Unknown'} (Lat: ${parseFloat(lat).toFixed(2)}, Lon: ${parseFloat(lon).toFixed(2)})`;
             locationResult.className = 'location-status';
 
-            // If file includes chart data, render it directly without API call
-            if (data.chart && data.chart.vargas_charts) {
-                lastBirthDetails = b;
-                lastChartResult = data.chart;
-                currentVargasData = data.chart.vargas_charts;
-                renderAllSelectedCharts();
-                renderTable(data.chart.table);
-                if (data.chart.dasha) renderDashaTable(data.chart.dasha);
-                if (data.chart.panchang) renderPanchang(data.chart.panchang);
-                document.getElementById('results-section').classList.remove('hidden');
-            } else {
-                // Only birth details — auto-submit form to generate chart
-                form.requestSubmit();
-            }
+            // Auto-submit to generate chart
+            form.requestSubmit();
         } catch (err) {
             console.error('Import error:', err);
-            alert('Failed to read chart file. Make sure it\'s a valid .jyotish file.');
+            alert('Failed to read file.');
         }
-        // Reset file input so same file can be re-imported
         e.target.value = '';
     });
 });
