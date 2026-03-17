@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ethereal Minimalism - Practitioner Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&amp;family=Outfit:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#C6A87C",
+                        "background-light": "#F9F6F0",
+                        "background-dark": "#211b11",
+                        "surface": "#FFFFFF",
+                        "charcoal": "#2C2A29",
+                        "muted": "#8A847C",
+                        "accent": "#8FA396",
+                        "border-color": "#E8E3DB"
+                    },
+                    fontFamily: {
+                        "display": ["Cormorant Garamond", "serif"],
+                        "body": ["Outfit", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "sm": "2px", "md": "4px", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    spacing: {
+                        "section": "120px"
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Outfit', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-display { font-family: 'Cormorant Garamond', serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-charcoal dark:text-slate-100 antialiased min-h-screen flex">
+<!-- Sidebar -->
+<aside class="w-[240px] bg-charcoal text-surface flex flex-col fixed h-full z-10 shrink-0">
+<div class="p-8 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">auto_awesome</span>
+<span class="font-display text-xl font-semibold tracking-wide">Ethereal</span>
+</div>
+<nav class="flex-1 px-4 py-6 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-md bg-primary/20 text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-md text-surface/80 hover:bg-surface/10 hover:text-surface transition-colors" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="text-sm font-medium">Bookings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-md text-surface/80 hover:bg-surface/10 hover:text-surface transition-colors" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="text-sm font-medium">Courses</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-md text-surface/80 hover:bg-surface/10 hover:text-surface transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">Clients</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-md text-surface/80 hover:bg-surface/10 hover:text-surface transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="p-4 border-t border-surface/10">
+<div class="flex items-center gap-3 px-4 py-3">
+<div class="w-8 h-8 rounded-full bg-surface/20 flex items-center justify-center text-sm font-medium">
+                    PR
+                </div>
+<div>
+<p class="text-sm font-medium leading-none mb-1">Dr. Sharma</p>
+<p class="text-xs text-surface/60">Practitioner</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 ml-[240px] flex flex-col min-h-screen">
+<!-- Header -->
+<header class="h-20 flex items-center justify-between px-10 border-b border-border-color bg-background-light dark:bg-background-dark sticky top-0 z-10">
+<h1 class="font-display text-3xl font-semibold text-charcoal dark:text-slate-100">Overview</h1>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full border border-border-color flex items-center justify-center hover:border-primary transition-colors text-charcoal dark:text-slate-100">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<div class="p-10 flex-1 max-w-[1200px] w-full mx-auto">
+<!-- Metric Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<div class="bg-surface dark:bg-charcoal p-8 rounded-md border border-border-color flex flex-col gap-2 shadow-sm">
+<p class="text-muted text-sm uppercase tracking-wider font-medium">Appointments Today</p>
+<p class="font-display text-4xl font-semibold text-charcoal dark:text-slate-100">3</p>
+</div>
+<div class="bg-surface dark:bg-charcoal p-8 rounded-md border border-border-color flex flex-col gap-2 shadow-sm">
+<p class="text-muted text-sm uppercase tracking-wider font-medium">Pending Reviews</p>
+<p class="font-display text-4xl font-semibold text-charcoal dark:text-slate-100">12</p>
+</div>
+<div class="bg-surface dark:bg-charcoal p-8 rounded-md border border-border-color flex flex-col gap-2 shadow-sm">
+<p class="text-muted text-sm uppercase tracking-wider font-medium">Active Students</p>
+<p class="font-display text-4xl font-semibold text-charcoal dark:text-slate-100">45</p>
+</div>
+</div>
+<!-- Upcoming Schedule -->
+<div class="mb-8 flex items-center justify-between">
+<h2 class="font-display text-3xl font-semibold text-charcoal dark:text-slate-100">Upcoming Schedule</h2>
+<a class="text-sm font-medium text-primary hover:text-primary/80 transition-colors uppercase tracking-widest" href="#">View All</a>
+</div>
+<div class="bg-surface dark:bg-charcoal border border-border-color rounded-md overflow-hidden shadow-sm">
+<div class="divide-y divide-border-color">
+<!-- Schedule Item 1 -->
+<div class="p-6 flex items-center justify-between hover:bg-background-light/50 dark:hover:bg-background-dark/50 transition-colors">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-display text-xl">
+                                EA
+                            </div>
+<div>
+<h3 class="font-medium text-lg text-charcoal dark:text-slate-100 mb-1">Eleanor Vance</h3>
+<p class="text-sm text-muted">Natal Chart Reading • 60 Min</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="text-right">
+<p class="font-medium text-charcoal dark:text-slate-100">10:00 AM</p>
+<p class="text-sm text-muted">Oct 24, 2023</p>
+</div>
+<button class="bg-primary text-surface px-6 py-2 rounded-md text-xs font-medium uppercase tracking-[2px] hover:bg-primary/90 transition-colors">
+                                Join Meet
+                            </button>
+</div>
+</div>
+<!-- Schedule Item 2 -->
+<div class="p-6 flex items-center justify-between hover:bg-background-light/50 dark:hover:bg-background-dark/50 transition-colors">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-display text-xl">
+                                MR
+                            </div>
+<div>
+<h3 class="font-medium text-lg text-charcoal dark:text-slate-100 mb-1">Marcus Reed</h3>
+<p class="text-sm text-muted">Transit Analysis • 45 Min</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="text-right">
+<p class="font-medium text-charcoal dark:text-slate-100">1:30 PM</p>
+<p class="text-sm text-muted">Oct 24, 2023</p>
+</div>
+<button class="bg-primary text-surface px-6 py-2 rounded-md text-xs font-medium uppercase tracking-[2px] hover:bg-primary/90 transition-colors">
+                                Join Meet
+                            </button>
+</div>
+</div>
+<!-- Schedule Item 3 -->
+<div class="p-6 flex items-center justify-between hover:bg-background-light/50 dark:hover:bg-background-dark/50 transition-colors">
+<div class="flex items-center gap-6">
+<div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-display text-xl">
+                                SL
+                            </div>
+<div>
+<h3 class="font-medium text-lg text-charcoal dark:text-slate-100 mb-1">Sarah Lin</h3>
+<p class="text-sm text-muted">Muhurta Consultation • 30 Min</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="text-right">
+<p class="font-medium text-charcoal dark:text-slate-100">3:00 PM</p>
+<p class="text-sm text-muted">Oct 24, 2023</p>
+</div>
+<button class="bg-surface text-charcoal border border-border-color px-6 py-2 rounded-md text-xs font-medium uppercase tracking-[2px] hover:border-primary transition-colors">
+                                Details
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
