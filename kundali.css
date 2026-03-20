@@ -188,6 +188,24 @@ body {
     margin-bottom: 1rem;
 }
 
+.back-home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin-bottom: 1rem;
+}
+
+.back-home-btn:hover {
+    color: var(--accent-solid);
+    background: rgba(139, 92, 246, 0.1);
+}
+
 .app-header h1 {
     font-size: 3rem;
     font-family: 'Playfair Display', serif;
