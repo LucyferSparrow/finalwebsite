@@ -3,7 +3,7 @@
    Purple & Pastel Gradient Astrology Theme
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap');
+/* Fonts loaded via <link> in HTML for better performance */
 
 /* ── Custom Properties ── */
 :root {
@@ -122,6 +122,7 @@ ul {
   height: 100%;
   z-index: 0;
   pointer-events: none;
+  will-change: contents;
 }
 
 /* ── Navigation ── */
@@ -1798,5 +1799,77 @@ ul {
 
   .newsletter-form {
     flex-direction: column;
+  }
+}
+/* ══════════════════════════════════════════
+   Performance Optimizations
+   ══════════════════════════════════════════ */
+
+/* GPU Acceleration Hints for Animated Elements */
+.zodiac-ring,
+.zodiac-symbol,
+.float-orb,
+.zodiac-center .sun-icon,
+.nav-logo .logo-icon,
+.hero-badge .dot {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Optimize backdrop-filter on mobile */
+@media (max-width: 768px) {
+  .navbar.scrolled {
+    backdrop-filter: blur(12px);
+  }
+  
+  .hero-badge {
+    backdrop-filter: blur(6px);
+  }
+  
+  .zodiac-center {
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* ══════════════════════════════════════════
+   Reduced Motion Preferences
+   Accessibility & Low-end Device Support
+   ══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  #particle-canvas {
+    display: none !important;
+  }
+  
+  .zodiac-ring {
+    animation: none !important;
+  }
+  
+  .float-orb {
+    animation: none !important;
+    opacity: 0.4;
+  }
+  
+  .zodiac-center .sun-icon,
+  .nav-logo .logo-icon,
+  .hero-badge .dot {
+    animation: none !important;
+  }
+  
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .stagger-children > * {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

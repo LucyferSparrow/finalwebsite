@@ -523,3 +523,41 @@ input:focus {
         grid-template-columns: 1fr;
     }
 }
+/* ══════════════════════════════════════════
+   Performance Optimizations
+   ══════════════════════════════════════════ */
+
+/* GPU acceleration for animated/transformed elements */
+.chart-container,
+.glass-panel,
+.primary-btn,
+.stars-bg::after {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* ══════════════════════════════════════════
+   Reduced Motion Preferences
+   ══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.2s !important;
+  }
+  
+  .stars-bg::after {
+    animation: none !important;
+  }
+  
+  .primary-chart .chart-container:hover,
+  .secondary-chart .chart-container:hover {
+    transform: none !important;
+  }
+  
+  .spinner {
+    animation: spin 1s linear infinite !important;
+  }
+}

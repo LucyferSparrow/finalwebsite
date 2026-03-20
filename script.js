@@ -81,25 +81,116 @@ document.addEventListener('DOMContentLoaded', async () => {
   initNewsletterForm();
 });
 
+// ── Device Capability Detection ──
+function getDeviceCapability() {
+  const dominated = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (dominated) return 'minimal';
+  
+  const cores = navigator.hardwareConcurrency || 2;
+  const memory = navigator.deviceMemory || 4; // GB, defaults to 4 if unsupported
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  // High-end: 8+ cores, 8+ GB RAM, or desktop with 4+ cores
+  if (cores >= 8 && memory >= 8) return 'high';
+  if (!isMobile && cores >= 4 && memory >= 4) return 'high';
+  
+  // Mid-range: 4+ cores or 4+ GB RAM
+  if (cores >= 4 || memory >= 4) return 'medium';
+  
+  // Low-end: everything else
+  return 'low';
+}
+
 // ── Particle Canvas Background ──
 function initParticles() {
   const canvas = document.getElementById('particle-canvas');
-  const ctx = canvas.getContext('2d');
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d', { alpha: true });
+  const capability = getDeviceCapability();
+  
+  // Skip particles entirely for minimal motion preference
+  if (capability === 'minimal') {
+    canvas.style.display = 'none';
+    return;
+  }
+  
   let particles = [];
   let mouse = { x: null, y: null };
+  let animationId = null;
+  let isVisible = true;
+  
+  // Configuration based on device capability
+  const config = {
+    high: { maxParticles: 100, connections: true, connectionDist: 150, mouseInteraction: true, glow: true },
+    medium: { maxParticles: 50, connections: true, connectionDist: 120, mouseInteraction: true, glow: true },
+    low: { maxParticles: 25, connections: false, connectionDist: 0, mouseInteraction: false, glow: false }
+  }[capability];
+
+  // Use offscreen canvas for better performance (where supported)
+  let offscreen = null;
+  let offCtx = null;
+  if (typeof OffscreenCanvas !== 'undefined' && capability === 'high') {
+    try {
+      offscreen = new OffscreenCanvas(canvas.width, canvas.height);
+      offCtx = offscreen.getContext('2d', { alpha: true });
+    } catch (e) { /* fallback to regular canvas */ }
+  }
+  const drawCtx = offCtx || ctx;
 
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    if (offscreen) {
+      offscreen.width = canvas.width;
+      offscreen.height = canvas.height;
+    }
   }
 
   resize();
-  window.addEventListener('resize', resize);
+  
+  // Debounced resize for performance
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(resize, 150);
+  }, { passive: true });
 
-  window.addEventListener('mousemove', (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
+  // Throttled mouse tracking
+  let mouseThrottle = 0;
+  if (config.mouseInteraction) {
+    window.addEventListener('mousemove', (e) => {
+      const now = Date.now();
+      if (now - mouseThrottle > 16) { // ~60fps
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouseThrottle = now;
+      }
+    }, { passive: true });
+  }
+
+  // Pause when tab is not visible
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      isVisible = false;
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+    } else {
+      isVisible = true;
+      if (!animationId) animate();
+    }
   });
+
+  const colors = [
+    '216, 180, 254',  // lavender
+    '240, 171, 252',  // pink
+    '251, 196, 171',  // peach
+    '167, 243, 208',  // mint
+    '186, 230, 253',  // sky
+    '249, 168, 212',  // rose
+  ];
 
   class Particle {
     constructor() {
@@ -115,15 +206,6 @@ function initParticles() {
       this.opacity = Math.random() * 0.5 + 0.1;
       this.pulse = Math.random() * Math.PI * 2;
       this.pulseSpeed = Math.random() * 0.02 + 0.005;
-
-      const colors = [
-        '216, 180, 254',  // lavender
-        '240, 171, 252',  // pink
-        '251, 196, 171',  // peach
-        '167, 243, 208',  // mint
-        '186, 230, 253',  // sky
-        '249, 168, 212',  // rose
-      ];
       this.color = colors[Math.floor(Math.random() * colors.length)];
     }
 
@@ -132,12 +214,13 @@ function initParticles() {
       this.y += this.speedY;
       this.pulse += this.pulseSpeed;
 
-      // Mouse interaction
-      if (mouse.x !== null) {
+      // Mouse interaction (only if enabled)
+      if (config.mouseInteraction && mouse.x !== null) {
         const dx = mouse.x - this.x;
         const dy = mouse.y - this.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 120) {
+        const distSq = dx * dx + dy * dy; // Skip sqrt for performance
+        if (distSq < 14400) { // 120^2
+          const dist = Math.sqrt(distSq);
           this.x -= dx * 0.008;
           this.y -= dy * 0.008;
         }
@@ -150,56 +233,114 @@ function initParticles() {
       if (this.y > canvas.height + 10) this.y = -10;
     }
 
-    draw() {
+    draw(ctx) {
       const currentOpacity = this.opacity * (0.7 + 0.3 * Math.sin(this.pulse));
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(${this.color}, ${currentOpacity})`;
       ctx.fill();
 
-      // Glow effect
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${this.color}, ${currentOpacity * 0.15})`;
-      ctx.fill();
-    }
-  }
-
-  // Create particles
-  const count = Math.min(120, Math.floor((canvas.width * canvas.height) / 12000));
-  for (let i = 0; i < count; i++) {
-    particles.push(new Particle());
-  }
-
-  // Draw connections between close particles
-  function drawConnections() {
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < 150) {
-          const opacity = (1 - dist / 150) * 0.08;
-          ctx.strokeStyle = `rgba(216, 180, 254, ${opacity})`;
-          ctx.lineWidth = 0.5;
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.stroke();
-        }
+      // Glow effect (only if enabled)
+      if (config.glow) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${this.color}, ${currentOpacity * 0.15})`;
+        ctx.fill();
       }
     }
   }
 
+  // Create particles based on screen size and capability
+  const baseCount = Math.floor((canvas.width * canvas.height) / 12000);
+  const count = Math.min(config.maxParticles, baseCount);
+  for (let i = 0; i < count; i++) {
+    particles.push(new Particle());
+  }
+
+  // Optimized spatial grid for connection checks
+  let grid = {};
+  const cellSize = config.connectionDist || 150;
+  
+  function updateGrid() {
+    grid = {};
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      const cellX = Math.floor(p.x / cellSize);
+      const cellY = Math.floor(p.y / cellSize);
+      const key = `${cellX},${cellY}`;
+      if (!grid[key]) grid[key] = [];
+      grid[key].push(i);
+    }
+  }
+
+  function drawConnections(ctx) {
+    if (!config.connections) return;
+    
+    updateGrid();
+    const checked = new Set();
+    const maxDist = config.connectionDist;
+    const maxDistSq = maxDist * maxDist;
+    
+    ctx.strokeStyle = 'rgba(216, 180, 254, 0.08)';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    
+    for (const key in grid) {
+      const [cx, cy] = key.split(',').map(Number);
+      const indices = grid[key];
+      
+      // Check particles in same and adjacent cells
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          const neighborKey = `${cx + dx},${cy + dy}`;
+          const neighbors = grid[neighborKey];
+          if (!neighbors) continue;
+          
+          for (const i of indices) {
+            for (const j of neighbors) {
+              if (i >= j) continue;
+              const pairKey = `${i}-${j}`;
+              if (checked.has(pairKey)) continue;
+              checked.add(pairKey);
+              
+              const p1 = particles[i];
+              const p2 = particles[j];
+              const ddx = p1.x - p2.x;
+              const ddy = p1.y - p2.y;
+              const distSq = ddx * ddx + ddy * ddy;
+              
+              if (distSq < maxDistSq) {
+                const opacity = (1 - Math.sqrt(distSq) / maxDist) * 0.08;
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+              }
+            }
+          }
+        }
+      }
+    }
+    ctx.stroke();
+  }
+
   function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach(p => {
-      p.update();
-      p.draw();
-    });
-    drawConnections();
-    requestAnimationFrame(animate);
+    if (!isVisible) return;
+    
+    drawCtx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    for (let i = 0; i < particles.length; i++) {
+      particles[i].update();
+      particles[i].draw(drawCtx);
+    }
+    
+    drawConnections(drawCtx);
+    
+    // Copy from offscreen if using it
+    if (offscreen) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(offscreen, 0, 0);
+    }
+    
+    animationId = requestAnimationFrame(animate);
   }
 
   animate();
