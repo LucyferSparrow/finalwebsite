@@ -459,6 +459,22 @@
                                 <button type="submit" class="action-btn action-btn-primary" style="padding: 10px 22px;">Add Devi</button>
                             </div>
                         </form>
+                        <div class="preview-container" style="margin-top: 14px;">
+                            <div class="preview-box">
+                                <div class="preview-bar">
+                                    <span class="preview-dot r"></span>
+                                    <span class="preview-dot y"></span>
+                                    <span class="preview-dot g"></span>
+                                    <span style="margin-left: 4px;">Devi URL Preview</span>
+                                </div>
+                                <div class="preview-body-area" id="devi-preview-body">
+                                    <div class="preview-placeholder">
+                                        <div class="icon">🪷</div>
+                                        <p>Paste a URL to preview.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="list-container" id="devis-list">
                         <div class="empty-state"><div class="icon">🪷</div><p>Loading...</p></div>
@@ -564,6 +580,43 @@
                 <div class="form-actions">
                     <button type="submit" class="action-btn action-btn-primary" style="padding: 12px 32px;">Save Changes</button>
                     <button type="button" class="action-btn action-btn-outline" style="padding: 12px 24px;" onclick="closeEditModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="edit-devi-modal">
+        <div class="modal-box">
+            <h3>✏️ Edit Devi</h3>
+            <form id="edit-devi-form">
+                <input type="hidden" id="edit-devi-id" />
+                <div class="field">
+                    <label for="edit-devi-name">Name</label>
+                    <input type="text" id="edit-devi-name" required />
+                </div>
+                <div class="field">
+                    <label for="edit-devi-url">Image URL (optional)</label>
+                    <input type="url" id="edit-devi-url" />
+                </div>
+                <div class="preview-container">
+                    <div class="preview-box">
+                        <div class="preview-bar">
+                            <span class="preview-dot r"></span>
+                            <span class="preview-dot y"></span>
+                            <span class="preview-dot g"></span>
+                            <span style="margin-left: 4px;">Edit Preview</span>
+                        </div>
+                        <div class="preview-body-area" id="edit-devi-preview-body">
+                            <div class="preview-placeholder">
+                                <div class="icon">🪷</div>
+                                <p>Paste a URL to preview.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="action-btn action-btn-primary" style="padding: 12px 32px;">Save Changes</button>
+                    <button type="button" class="action-btn action-btn-outline" style="padding: 12px 24px;" onclick="closeDeviEditModal()">Cancel</button>
                 </div>
             </form>
         </div>
@@ -773,12 +826,12 @@
                     <div class="course-icon">🪷</div>
                     <div class="course-info">
                         <div class="title">${esc(d.name)}</div>
-                        ${d.url ? `<div class="meta"><a href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">${esc(d.url)}</a></div>` : ''}
+                        ${d.url ? `<div class="meta"><a href="${escAttr(d.url)}" target="_blank" rel="noopener noreferrer">${esc(d.url)}</a></div>` : ''}
                     </div>
                 </div>
                 <div class="consult-right">
                     <div class="action-group">
-                        <button class="action-btn action-btn-edit" onclick="editDevi(${d.id}, '${esc(d.name)}', '${esc(d.url || '')}')">✏ Edit</button>
+                        <button class="action-btn action-btn-edit" onclick="openDeviEditModal(${d.id})">✏ Edit</button>
                         <button class="action-btn action-btn-delete" onclick="deleteDevi(${d.id})">✕</button>
                     </div>
                 </div>
@@ -798,20 +851,42 @@
         });
         document.getElementById('devi-name').value = '';
         document.getElementById('devi-url').value = '';
+        updateDeviPreview('devi-url', 'devi-preview-body');
         adminLoadDevis();
     });
 
-    async function editDevi(id, oldName, oldUrl) {
-        const name = prompt('Edit Devi name', oldName);
-        if (!name || !name.trim()) return;
-        const url = prompt('Edit Devi URL (optional)', oldUrl || '') || '';
+    function openDeviEditModal(id) {
+        const devi = devisData.find(d => d.id === id);
+        if (!devi) return;
+        document.getElementById('edit-devi-id').value = devi.id;
+        document.getElementById('edit-devi-name').value = devi.name || '';
+        document.getElementById('edit-devi-url').value = devi.url || '';
+        document.getElementById('edit-devi-modal').classList.add('active');
+        updateDeviPreview('edit-devi-url', 'edit-devi-preview-body');
+    }
+
+    function closeDeviEditModal() {
+        document.getElementById('edit-devi-modal').classList.remove('active');
+    }
+
+    document.getElementById('edit-devi-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('edit-devi-modal')) closeDeviEditModal();
+    });
+
+    document.getElementById('edit-devi-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit-devi-id').value;
+        const name = document.getElementById('edit-devi-name').value.trim();
+        const url = document.getElementById('edit-devi-url').value.trim();
+        if (!name) return;
         await fetch('/api/devi', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
-            body: JSON.stringify({ id, name: name.trim(), url: url.trim() }),
+            body: JSON.stringify({ id, name, url }),
         });
+        closeDeviEditModal();
         adminLoadDevis();
-    }
+    });
 
     async function deleteDevi(id) {
         if (!confirm('Delete this Devi?')) return;
@@ -991,6 +1066,22 @@
 
     // ── Utility ──
     function esc(str) { const d = document.createElement('div'); d.textContent = str || ''; return d.innerHTML; }
+    function escAttr(str) { const d = document.createElement('div'); d.textContent = str || ''; return d.innerHTML.replace(/"/g, '&quot;'); }
+
+    function updateDeviPreview(inputId, targetId) {
+        const input = document.getElementById(inputId);
+        const target = document.getElementById(targetId);
+        if (!input || !target) return;
+        const url = input.value.trim();
+        if (!url) {
+            target.innerHTML = '<div class="preview-placeholder"><div class="icon">🪷</div><p>Paste a URL to preview.</p></div>';
+            return;
+        }
+        target.innerHTML = `<img src="${escAttr(url)}" alt="Devi preview" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><p style="display:none;color:var(--text-secondary);">Could not load preview</p>`;
+    }
+
+    document.getElementById('devi-url').addEventListener('input', () => updateDeviPreview('devi-url', 'devi-preview-body'));
+    document.getElementById('edit-devi-url').addEventListener('input', () => updateDeviPreview('edit-devi-url', 'edit-devi-preview-body'));
 
     // ── Init ──
     initAdmin();

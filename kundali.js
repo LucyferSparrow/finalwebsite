@@ -132,6 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const deviPrashnaOutput = document.getElementById('devi-prashna-output');
     const deviPrashnaDescription = document.getElementById('devi-prashna-description');
     const deviPrashnaUrl = document.getElementById('devi-prashna-url');
+    const deviPrashnaImageWrap = document.getElementById('devi-prashna-image-wrap');
+    const deviPrashnaImage = document.getElementById('devi-prashna-image');
 
     if (openPrashnaBtn && prashnaSection) {
         openPrashnaBtn.addEventListener('click', () => {
@@ -348,6 +350,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (deviPrashnaDescription) {
             deviPrashnaDescription.textContent = 'Drawing...';
             if (deviPrashnaUrl) deviPrashnaUrl.innerHTML = '';
+            if (deviPrashnaImageWrap) deviPrashnaImageWrap.classList.add('hidden');
+            if (deviPrashnaImage) deviPrashnaImage.removeAttribute('src');
             fetch('/api/devi?random=1')
                 .then(res => res.json())
                 .then(data => {
@@ -356,15 +360,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (deviPrashnaUrl) {
                         if (devi?.url) {
                             const safeUrl = String(devi.url).replace(/"/g, '&quot;');
-                            deviPrashnaUrl.innerHTML = `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>`;
+                            deviPrashnaUrl.innerHTML = `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open image URL</a>`;
+                            if (deviPrashnaImage && deviPrashnaImageWrap) {
+                                deviPrashnaImage.src = safeUrl;
+                                deviPrashnaImageWrap.classList.remove('hidden');
+                                deviPrashnaImage.onerror = () => {
+                                    deviPrashnaImageWrap.classList.add('hidden');
+                                };
+                            }
                         } else {
                             deviPrashnaUrl.innerHTML = '';
+                            if (deviPrashnaImageWrap) deviPrashnaImageWrap.classList.add('hidden');
                         }
                     }
                 })
                 .catch(() => {
                     deviPrashnaDescription.textContent = 'Could not draw Devi';
                     if (deviPrashnaUrl) deviPrashnaUrl.innerHTML = '';
+                    if (deviPrashnaImageWrap) deviPrashnaImageWrap.classList.add('hidden');
                 });
         }
     }

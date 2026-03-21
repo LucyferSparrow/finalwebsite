@@ -499,6 +499,17 @@ input:focus {
     text-decoration: underline;
 }
 
+#devi-prashna-image-wrap {
+    margin-top: 0.6rem;
+}
+
+#devi-prashna-image {
+    width: 100%;
+    max-width: 420px;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+}
+
 .primary-btn {
     background: var(--accent-solid);
     color: white;
