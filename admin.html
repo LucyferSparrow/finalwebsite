@@ -321,8 +321,9 @@
             .form-row-admin { grid-template-columns: 1fr; }
         }
 
-        /* Consultation message expand */
-        .consult-message { margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; padding-left: 60px; }
+        /* Consultation details expand */
+        .consult-detail { margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; padding-left: 60px; }
+        .consult-birth { white-space: pre-wrap; word-break: break-word; }
     </style>
 </head>
 
@@ -655,7 +656,8 @@
                     </div>` : ''}
                 </div>
             </div>
-            ${c.message ? `<div class="consult-message">${esc(c.message)}</div>` : ''}
+            ${c.birth ? `<div class="consult-detail consult-birth"><strong>Birth:</strong> ${esc(c.birth)}</div>` : ''}
+            ${c.message ? `<div class="consult-detail">${esc(c.message)}</div>` : ''}
         `;
     }
 
