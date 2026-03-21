@@ -571,6 +571,95 @@ input:focus {
     background: rgba(139, 92, 246, 0.05);
 }
 
+.dasha-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.dasha-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.dasha-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    min-height: 1.3rem;
+}
+
+.dasha-nav-left {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--text-primary);
+}
+
+.dasha-toggle {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 0;
+    line-height: 1;
+}
+
+.dasha-nav-path {
+    font-weight: 600;
+}
+
+.dasha-nav-actions {
+    display: flex;
+    gap: 0.7rem;
+    font-size: 0.95rem;
+}
+
+.dasha-action {
+    color: #f97316;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.dasha-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 0.2rem;
+}
+
+.dasha-row {
+    display: grid;
+    grid-template-columns: 2.6rem 2.8rem 1fr;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--text-primary);
+}
+
+.dasha-lord {
+    font-weight: 500;
+}
+
+.dasha-age {
+    color: var(--text-secondary);
+}
+
+.dasha-date {
+    color: #f97316;
+    text-decoration: underline;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.dasha-active {
+    color: #ef4444;
+    font-weight: 700;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .form-row {

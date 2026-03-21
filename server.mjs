@@ -95,6 +95,10 @@ app.post('/api/kundali', async (req, res, next) => {
         end: `${da2}-${mo2}-${y2}`
       };
     });
+    const dashaMeta = {
+      startingTara: chart.dasha.nakshatraLordAbbrev,
+      startingNakshatra: chart.dasha.startingNakshatra
+    };
 
     // Build panchang
     const pakshaFull = panchanga.tithi?.paksha === 'S' ? 'Shukla Paksha' : 'Krishna Paksha';
@@ -106,7 +110,7 @@ app.post('/api/kundali', async (req, res, next) => {
       karana: panchanga.karana?.name || ''
     };
 
-    res.json({ vargas_charts, table, dasha, panchang });
+    res.json({ vargas_charts, table, dasha, dashaMeta, panchang });
   } catch (error) {
     next(error);
   }

@@ -116,6 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentVargasData = null;
     let lastBirthDetails = null; // birth details for export
+    let dashaRoot = [];
+    let dashaPath = [];
 
     // Listen for dropdown changes to update individual charts immediately
     document.querySelectorAll('.varga-select').forEach(select => {
@@ -222,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTable(data.table);
             
             if (data.dasha) {
-                renderDashaTable(data.dasha);
+                renderDashaTable(data.dasha, data.dashaMeta || {});
             }
             if (data.panchang) {
                 renderPanchang(data.panchang);
@@ -263,19 +265,233 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    function renderDashaTable(dashaTimeline) {
-        const tbody = document.querySelector('#dasha-table tbody');
-        tbody.innerHTML = '';
-        
-        dashaTimeline.forEach(period => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${period.planet}</strong></td>
-                <td>${period.start}</td>
-                <td>${period.end}</td>
-            `;
-            tbody.appendChild(tr);
+    function parseDmy(dateStr) {
+        const [d, m, y] = dateStr.split('-').map(Number);
+        return new Date(Date.UTC(y, m - 1, d));
+    }
+
+    function formatDmy(dateObj) {
+        const d = String(dateObj.getUTCDate()).padStart(2, '0');
+        const m = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+        const y = dateObj.getUTCFullYear();
+        return `${d}-${m}-${y}`;
+    }
+
+    function formatDmyHm(dateObj) {
+        const d = String(dateObj.getUTCDate()).padStart(2, '0');
+        const m = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+        const y = dateObj.getUTCFullYear();
+        const hh = String(dateObj.getUTCHours()).padStart(2, '0');
+        const mm = String(dateObj.getUTCMinutes()).padStart(2, '0');
+        return `${d}-${m}-${y} ${hh}:${mm}`;
+    }
+
+    function addFractionDays(dateObj, daysFloat) {
+        return new Date(dateObj.getTime() + daysFloat * 86400000);
+    }
+
+    function calcAgeValue(periodStartUtc, birthDateUtc) {
+        return ((periodStartUtc - birthDateUtc) / (365.25 * 86400000));
+    }
+
+    function renderDashaTable(dashaTimeline, dashaMeta) {
+        const subtitle = document.getElementById('dasha-subtitle');
+        const nav = document.getElementById('dasha-nav');
+        const list = document.getElementById('dasha-list');
+        if (!subtitle || !nav || !list) return;
+
+        const ORDER = ['Ke', 'Ve', 'Su', 'Mo', 'Ma', 'Ra', 'Jp', 'Sa', 'Me'];
+        const YEARS = [7, 20, 6, 10, 7, 18, 16, 19, 17];
+        const CYCLE_YEARS = 120;
+        const MAX_DASHA_LEVEL = 8;
+
+        const birthDateStr = document.getElementById('date').value;
+        const birthDateUtc = birthDateStr ? new Date(`${birthDateStr}T00:00:00Z`) : new Date();
+        const childCache = new Map();
+        dashaRoot = dashaTimeline.map((period) => {
+            const startDateUtc = parseDmy(period.start);
+            const endDateUtc = parseDmy(period.end);
+            const lordIndex = ORDER.indexOf(period.planet);
+            return {
+                lord: period.planet,
+                lordIndex,
+                level: 1,
+                start: period.start,
+                end: period.end,
+                startDateUtc,
+                endDateUtc,
+                age: Math.round(calcAgeValue(startDateUtc, birthDateUtc) * 10) / 10
+            };
         });
+        dashaPath = [];
+
+        const startingTara = dashaMeta.startingTara || '';
+        const startingNakshatra = dashaMeta.startingNakshatra || '';
+        subtitle.textContent = startingTara && startingNakshatra
+            ? `Starting Tara ${startingTara} (${startingNakshatra})`
+            : '';
+
+        function getCurrentDateUtc() {
+            return new Date();
+        }
+
+        function isActivePeriod(start, end, nowUtc) {
+            return nowUtc >= start && nowUtc <= end;
+        }
+
+        function cacheKey(node) {
+            return `${node.level}|${node.lordIndex}|${node.startDateUtc.getTime()}|${node.endDateUtc.getTime()}`;
+        }
+
+        function buildChildren(node) {
+            if (node.level >= MAX_DASHA_LEVEL) return [];
+            const key = cacheKey(node);
+            if (childCache.has(key)) return childCache.get(key);
+
+            const children = [];
+            const durationDays = (node.endDateUtc - node.startDateUtc) / 86400000;
+            let childStart = node.startDateUtc;
+
+            for (let step = 0; step < 9; step++) {
+                const childLordIndex = (node.lordIndex + step) % 9;
+                const childDays = (durationDays * YEARS[childLordIndex]) / CYCLE_YEARS;
+                const childEnd = (step === 8) ? node.endDateUtc : addFractionDays(childStart, childDays);
+                children.push({
+                    lord: ORDER[childLordIndex],
+                    lordIndex: childLordIndex,
+                    level: node.level + 1,
+                    start: formatDmy(childStart),
+                    end: formatDmy(childEnd),
+                    startDateUtc: childStart,
+                    endDateUtc: childEnd,
+                    age: Math.round(calcAgeValue(childStart, birthDateUtc) * 10) / 10
+                });
+                childStart = childEnd;
+            }
+
+            childCache.set(key, children);
+            return children;
+        }
+
+        function getRowsAtPath(path) {
+            if (path.length === 0) return dashaRoot;
+            let node = dashaRoot[path[0]];
+            for (let i = 1; i < path.length; i++) {
+                const children = buildChildren(node);
+                node = children[path[i]];
+            }
+            return buildChildren(node);
+        }
+
+        function getPathNodes(path) {
+            if (path.length === 0) return [];
+            const nodes = [];
+            let node = dashaRoot[path[0]];
+            nodes.push(node);
+            for (let i = 1; i < path.length; i++) {
+                node = buildChildren(node)[path[i]];
+                nodes.push(node);
+            }
+            return nodes;
+        }
+
+        function renderNav(pathLabel, expanded, onToggle, onBack, onClear) {
+            nav.innerHTML = '';
+            if (!pathLabel) return;
+
+            const left = document.createElement('div');
+            left.className = 'dasha-nav-left';
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = 'dasha-toggle';
+            toggleBtn.textContent = expanded ? '▼' : '▶';
+            toggleBtn.addEventListener('click', onToggle);
+            const path = document.createElement('span');
+            path.className = 'dasha-nav-path';
+            path.textContent = pathLabel;
+            left.append(toggleBtn, path);
+
+            const actions = document.createElement('div');
+            actions.className = 'dasha-nav-actions';
+            const back = document.createElement('span');
+            back.className = 'dasha-action';
+            back.textContent = 'Back';
+            back.addEventListener('click', onBack);
+            const clear = document.createElement('span');
+            clear.className = 'dasha-action';
+            clear.textContent = 'Clear';
+            clear.addEventListener('click', onClear);
+            actions.append(back, clear);
+
+            nav.append(left, actions);
+        }
+
+        function renderRows(rows, onDateClick) {
+            list.innerHTML = '';
+            const nowUtc = getCurrentDateUtc();
+            rows.forEach((row, index) => {
+                const line = document.createElement('div');
+                line.className = 'dasha-row';
+
+                const lord = document.createElement('span');
+                lord.className = 'dasha-lord';
+                if (isActivePeriod(parseDmy(row.start), parseDmy(row.end), nowUtc)) {
+                    lord.classList.add('dasha-active');
+                }
+                lord.textContent = row.lord;
+
+                const age = document.createElement('span');
+                age.className = 'dasha-age';
+                age.textContent = row.age.toFixed(1);
+
+                const date = document.createElement('span');
+                date.className = 'dasha-date';
+                const durationMs = row.endDateUtc - row.startDateUtc;
+                const showTime = durationMs < (2 * 86400000) || row.level >= 5;
+                const displayStart = showTime ? formatDmyHm(row.startDateUtc) : row.start;
+                const displayEnd = showTime ? formatDmyHm(row.endDateUtc) : row.end;
+                date.textContent = `${displayStart} to ${displayEnd}`;
+                date.addEventListener('click', () => onDateClick(index));
+
+                line.append(lord, age, date);
+                list.appendChild(line);
+            });
+        }
+
+        function renderCurrent() {
+            const pathNodes = getPathNodes(dashaPath);
+            const currentRows = getRowsAtPath(dashaPath);
+            const canDrillDeeper = dashaPath.length < (MAX_DASHA_LEVEL - 1);
+
+            if (dashaPath.length === 0) {
+                nav.innerHTML = '';
+            } else {
+                const label = pathNodes.map(n => n.lord).join(' > ');
+                renderNav(
+                    label,
+                    true,
+                    () => {
+                        dashaPath.pop();
+                        renderCurrent();
+                    },
+                    () => {
+                        dashaPath.pop();
+                        renderCurrent();
+                    },
+                    () => {
+                        dashaPath = [];
+                        renderCurrent();
+                    }
+                );
+            }
+
+            renderRows(currentRows, (idx) => {
+                if (!canDrillDeeper) return;
+                dashaPath.push(idx);
+                renderCurrent();
+            });
+        }
+
+        renderCurrent();
     }
 
     function renderTable(tableData) {

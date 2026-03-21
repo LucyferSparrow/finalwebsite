@@ -89,6 +89,10 @@ export async function onRequestPost(context) {
       const [y2, mo2, da2] = md.endDate.split('-');
       return { planet: md.abbrev, start: `${da}-${mo}-${y}`, end: `${da2}-${mo2}-${y2}` };
     });
+    const dashaMeta = {
+      startingTara: chart.dasha.nakshatraLordAbbrev,
+      startingNakshatra: chart.dasha.startingNakshatra
+    };
 
     // Build panchang
     const pakshaFull = panchanga.tithi?.paksha === 'S' ? 'Shukla Paksha' : 'Krishna Paksha';
@@ -100,7 +104,7 @@ export async function onRequestPost(context) {
       karana: panchanga.karana?.name || '',
     };
 
-    return new Response(JSON.stringify({ vargas_charts, table, dasha, panchang }), { headers });
+    return new Response(JSON.stringify({ vargas_charts, table, dasha, dashaMeta, panchang }), { headers });
   } catch (error) {
     console.error('API Error:', error.message, error.stack);
     return new Response(
