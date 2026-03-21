@@ -490,6 +490,15 @@ input:focus {
     font-size: 0.85rem;
 }
 
+#devi-prashna-url {
+    margin-top: 0.5rem;
+}
+
+#devi-prashna-url a {
+    color: #f97316;
+    text-decoration: underline;
+}
+
 .primary-btn {
     background: var(--accent-solid);
     color: white;

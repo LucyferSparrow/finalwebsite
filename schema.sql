@@ -30,5 +30,6 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
 CREATE TABLE IF NOT EXISTS devis (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL UNIQUE,
+  url TEXT,
   created_at TEXT DEFAULT (datetime('now'))
 );

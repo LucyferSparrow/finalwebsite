@@ -131,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const kundliPrashnaValues = document.getElementById('kundli-prashna-values');
     const deviPrashnaOutput = document.getElementById('devi-prashna-output');
     const deviPrashnaDescription = document.getElementById('devi-prashna-description');
+    const deviPrashnaUrl = document.getElementById('devi-prashna-url');
 
     if (openPrashnaBtn && prashnaSection) {
         openPrashnaBtn.addEventListener('click', () => {
@@ -346,13 +347,24 @@ document.addEventListener('DOMContentLoaded', () => {
         deviPrashnaOutput?.classList.remove('hidden');
         if (deviPrashnaDescription) {
             deviPrashnaDescription.textContent = 'Drawing...';
+            if (deviPrashnaUrl) deviPrashnaUrl.innerHTML = '';
             fetch('/api/devi?random=1')
                 .then(res => res.json())
                 .then(data => {
-                    deviPrashnaDescription.textContent = data?.devi?.name || 'No Devi available';
+                    const devi = data?.devi || null;
+                    deviPrashnaDescription.textContent = devi?.name || 'No Devi available';
+                    if (deviPrashnaUrl) {
+                        if (devi?.url) {
+                            const safeUrl = String(devi.url).replace(/"/g, '&quot;');
+                            deviPrashnaUrl.innerHTML = `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>`;
+                        } else {
+                            deviPrashnaUrl.innerHTML = '';
+                        }
+                    }
                 })
                 .catch(() => {
                     deviPrashnaDescription.textContent = 'Could not draw Devi';
+                    if (deviPrashnaUrl) deviPrashnaUrl.innerHTML = '';
                 });
         }
     }

@@ -445,9 +445,15 @@
                     <div class="form-card-admin" style="margin-bottom:16px;">
                         <h3>✦ Add Devi</h3>
                         <form id="devi-form">
-                            <div class="field">
-                                <label for="devi-name">Devi Name</label>
-                                <input type="text" id="devi-name" placeholder="Enter Devi name..." required />
+                            <div class="form-row-admin">
+                                <div class="field">
+                                    <label for="devi-name">Devi Name</label>
+                                    <input type="text" id="devi-name" placeholder="Enter Devi name..." required />
+                                </div>
+                                <div class="field">
+                                    <label for="devi-url">Image URL (optional)</label>
+                                    <input type="url" id="devi-url" placeholder="https://..." />
+                                </div>
                             </div>
                             <div class="form-actions">
                                 <button type="submit" class="action-btn action-btn-primary" style="padding: 10px 22px;">Add Devi</button>
@@ -767,11 +773,12 @@
                     <div class="course-icon">🪷</div>
                     <div class="course-info">
                         <div class="title">${esc(d.name)}</div>
+                        ${d.url ? `<div class="meta"><a href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">${esc(d.url)}</a></div>` : ''}
                     </div>
                 </div>
                 <div class="consult-right">
                     <div class="action-group">
-                        <button class="action-btn action-btn-edit" onclick="editDevi(${d.id}, '${esc(d.name)}')">✏ Edit</button>
+                        <button class="action-btn action-btn-edit" onclick="editDevi(${d.id}, '${esc(d.name)}', '${esc(d.url || '')}')">✏ Edit</button>
                         <button class="action-btn action-btn-delete" onclick="deleteDevi(${d.id})">✕</button>
                     </div>
                 </div>
@@ -782,23 +789,26 @@
     document.getElementById('devi-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('devi-name').value.trim();
+        const url = document.getElementById('devi-url').value.trim();
         if (!name) return;
         await fetch('/api/devi', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
-            body: JSON.stringify({ name }),
+            body: JSON.stringify({ name, url }),
         });
         document.getElementById('devi-name').value = '';
+        document.getElementById('devi-url').value = '';
         adminLoadDevis();
     });
 
-    async function editDevi(id, oldName) {
+    async function editDevi(id, oldName, oldUrl) {
         const name = prompt('Edit Devi name', oldName);
         if (!name || !name.trim()) return;
+        const url = prompt('Edit Devi URL (optional)', oldUrl || '') || '';
         await fetch('/api/devi', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
-            body: JSON.stringify({ id, name: name.trim() }),
+            body: JSON.stringify({ id, name: name.trim(), url: url.trim() }),
         });
         adminLoadDevis();
     }
