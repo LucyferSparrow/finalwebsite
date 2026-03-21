@@ -85,7 +85,7 @@ body {
 /* Varga Grid Layout */
 .varga-grid {
     display: grid;
-    grid-template-columns: minmax(350px, 2fr) 1fr 1fr;
+    grid-template-columns: minmax(500px, 2fr) 1.2fr 1.2fr;
     grid-template-rows: auto auto;
     gap: 20px;
 }
@@ -95,12 +95,13 @@ body {
     grid-row: 1 / 3;
     display: flex;
     flex-direction: column;
+    padding: 0;
     position: relative;
     z-index: 1;
 }
 
 .secondary-chart {
-    padding: 1.25rem;
+    padding: 0.6rem;
     position: relative;
     z-index: 1;
 }
@@ -114,13 +115,10 @@ body {
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
 }
 
-.primary-chart .chart-container:hover {
-    transform: scale(1.05);
-    z-index: 100;
-}
+
 
 .secondary-chart .chart-container:hover {
-    transform: scale(1.6);
+    transform: translateY(20px) scale(1.5);
     z-index: 100;
 }
 
@@ -128,9 +126,34 @@ body {
     flex-grow: 1;
     display: flex;
     align-items: center;
+    padding: 0;
+    transform: scale(1.3);
+    transform-origin: center;
+    z-index: 100;
+}
+
+.primary-chart .chart-container:hover {
+    transform: scale(1.33);
 }
 
 .primary-chart .kundali-svg {
+    max-width: 100%;
+}
+
+.primary-chart .panel-header {
+    margin-bottom: 0.5rem;
+}
+
+.secondary-chart .chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    transform: translateY(20px) scale(1.3);
+    transform-origin: center;
+}
+
+.secondary-chart .kundali-svg {
     max-width: 100%;
 }
 
@@ -244,6 +267,19 @@ body {
 
 .glass-panel:hover {
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(139, 92, 246, 0.1);
+}
+
+/* Keep generated charts clean: no card background/border behind charts */
+.chart-panel.glass-panel {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+}
+
+.chart-panel.glass-panel:hover {
+    box-shadow: none;
 }
 
 .section-title {
@@ -484,7 +520,7 @@ input:focus {
 .chart-line {
     stroke: var(--accent-solid);
     stroke-width: 2;
-    fill: rgba(139, 92, 246, 0.05);
+    fill: none;
 }
 
 .chart-text {
