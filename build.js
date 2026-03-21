@@ -41,6 +41,7 @@ if (!existsSync(wasmDest)) {
 // Static files to copy
 const staticFiles = [
   'index.html',
+  'coming-soon.html',
   'kundali.html',
   'admin.html',
   'course-view.html',

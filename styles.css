@@ -1315,10 +1315,58 @@ ul {
   transition: var(--transition-spring);
 }
 
+.social-link svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
 .social-link:hover {
   background: var(--gradient-button);
   border-color: transparent;
   transform: translateY(-3px) scale(1.1);
+}
+
+/* ── Coming Soon (Socials) ── */
+.coming-soon {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 140px 0 80px;
+}
+
+.coming-soon-card {
+  width: min(820px, 100%);
+  margin: 0 auto;
+  padding: 44px 36px;
+  text-align: center;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--glass-shadow);
+}
+
+.coming-soon-icon {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--gradient-button);
+  color: var(--text-dark);
+}
+
+.coming-soon-icon svg {
+  width: 34px;
+  height: 34px;
+  fill: currentColor;
+}
+
+.coming-soon-socials {
+  margin-top: 26px;
 }
 
 .footer-col h4 {
