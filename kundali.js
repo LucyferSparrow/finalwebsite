@@ -119,6 +119,37 @@ document.addEventListener('DOMContentLoaded', () => {
     let dashaRoot = [];
     let dashaPath = [];
 
+    const openPrashnaBtn = document.getElementById('open-prashna-btn');
+    const prashnaSection = document.getElementById('prashna-section');
+    const randomPrashnaTypeSelect = document.getElementById('random-prashna-type');
+    const generatePrashnaBtn = document.getElementById('generate-prashna-btn');
+    const prashnaOutput = document.getElementById('prashna-output');
+    const prashnaSummary = document.getElementById('prashna-summary');
+    const ashtakavargaOutput = document.getElementById('ashtakavarga-output');
+    const ashtakavargaGrid = document.getElementById('ashtakavarga-grid');
+    const kundliPrashnaOutput = document.getElementById('kundli-prashna-output');
+    const kundliPrashnaValues = document.getElementById('kundli-prashna-values');
+    const deviPrashnaOutput = document.getElementById('devi-prashna-output');
+    const deviPrashnaDescription = document.getElementById('devi-prashna-description');
+
+    if (openPrashnaBtn && prashnaSection) {
+        openPrashnaBtn.addEventListener('click', () => {
+            prashnaSection.classList.toggle('hidden');
+            prashnaSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
+    if (generatePrashnaBtn) {
+        generatePrashnaBtn.addEventListener('click', () => {
+            if (!prashnaOutput) return;
+            prashnaOutput.classList.remove('hidden');
+            ashtakavargaOutput?.classList.add('hidden');
+            kundliPrashnaOutput?.classList.add('hidden');
+            deviPrashnaOutput?.classList.add('hidden');
+            runRandomPrashna();
+        });
+    }
+
     // Listen for dropdown changes to update individual charts immediately
     document.querySelectorAll('.varga-select').forEach(select => {
         select.addEventListener('change', (e) => {
@@ -216,7 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 lon: lon,
                 tzone: tzoneOffsetHours
             };
-
             // Save vargas data to state and render based on dropdowns
             currentVargasData = data.vargas_charts;
             renderAllSelectedCharts();
@@ -263,6 +293,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>${panchangData.karana}</span>
             </div>
         `;
+    }
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function resetKundliValuePanel(values) {
+        if (!kundliPrashnaValues) return;
+        kundliPrashnaValues.innerHTML = '';
+        values.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'value-item';
+            div.innerHTML = `<strong>${item.label}:</strong> ${item.value}`;
+            kundliPrashnaValues.appendChild(div);
+        });
+    }
+
+    function runRandomPrashna() {
+        const randomType = randomPrashnaTypeSelect ? randomPrashnaTypeSelect.value : 'ashtakavarga';
+        if (prashnaSummary) prashnaSummary.textContent = `${randomType.charAt(0).toUpperCase() + randomType.slice(1)} Prashna`;
+
+        if (randomType === 'ashtakavarga') {
+            ashtakavargaOutput?.classList.remove('hidden');
+            if (!ashtakavargaGrid) return;
+            ashtakavargaGrid.innerHTML = '';
+            for (let i = 1; i <= 12; i++) {
+                const score = getRandomInt(0, 7);
+                const cell = document.createElement('div');
+                cell.className = 'ashtakavarga-cell';
+                cell.innerHTML = `<strong>House ${i}</strong><span>${score}</span>`;
+                ashtakavargaGrid.appendChild(cell);
+            }
+            return;
+        }
+
+        if (randomType === 'kundli') {
+            kundliPrashnaOutput?.classList.remove('hidden');
+            const bhava = getRandomInt(1, 12);
+            const rashi = getRandomInt(1, 12);
+            const lord = getRandomInt(1, 12);
+            const nakshatraPada = getRandomInt(1, 3);
+            resetKundliValuePanel([
+                { label: 'Bhava', value: bhava },
+                { label: 'Rashi', value: rashi },
+                { label: 'Lord', value: lord },
+                { label: 'Nakshatra (Pada)', value: nakshatraPada }
+            ]);
+            return;
+        }
+
+        deviPrashnaOutput?.classList.remove('hidden');
+        if (deviPrashnaDescription) {
+            deviPrashnaDescription.textContent = 'Drawing...';
+            fetch('/api/devi?random=1')
+                .then(res => res.json())
+                .then(data => {
+                    deviPrashnaDescription.textContent = data?.devi?.name || 'No Devi available';
+                })
+                .catch(() => {
+                    deviPrashnaDescription.textContent = 'Could not draw Devi';
+                });
+        }
     }
 
     function parseDmy(dateStr) {

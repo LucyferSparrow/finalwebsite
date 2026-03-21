@@ -367,6 +367,9 @@
                 <button class="nav-item" data-panel="courses">
                     <span class="icon">📚</span><span>Courses</span>
                 </button>
+                <button class="nav-item" data-panel="devis">
+                    <span class="icon">🪷</span><span>Devis</span>
+                </button>
                 <div class="nav-divider"></div>
                 <button class="nav-item" data-panel="add-course">
                     <span class="icon">✦</span><span>Add Course</span>
@@ -430,6 +433,29 @@
                     </div>
                     <div class="list-container" id="courses-list">
                         <div class="empty-state"><div class="icon">📚</div><p>Loading...</p></div>
+                    </div>
+                </div>
+
+                <!-- ═══ Devis Panel ═══ -->
+                <div class="panel" id="panel-devis">
+                    <div class="section-head">
+                        <h2>Devi Collection</h2>
+                        <button class="action-link" onclick="adminLoadDevis()">Refresh</button>
+                    </div>
+                    <div class="form-card-admin" style="margin-bottom:16px;">
+                        <h3>✦ Add Devi</h3>
+                        <form id="devi-form">
+                            <div class="field">
+                                <label for="devi-name">Devi Name</label>
+                                <input type="text" id="devi-name" placeholder="Enter Devi name..." required />
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="action-btn action-btn-primary" style="padding: 10px 22px;">Add Devi</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="list-container" id="devis-list">
+                        <div class="empty-state"><div class="icon">🪷</div><p>Loading...</p></div>
                     </div>
                 </div>
 
@@ -539,7 +565,7 @@
 
     <script>
     let adminToken = localStorage.getItem('jyotish-admin-token') || '';
-    const pageTitles = { dashboard: 'Overview', consultations: 'Consultations', courses: 'Courses', 'add-course': 'New Course' };
+    const pageTitles = { dashboard: 'Overview', consultations: 'Consultations', courses: 'Courses', devis: 'Devis', 'add-course': 'New Course' };
 
     // ── Auth ──
     async function checkAuth() {
@@ -587,6 +613,7 @@
         document.getElementById('admin-content').style.display = 'flex';
         adminLoadConsultations();
         adminLoadCourses();
+        adminLoadDevis();
     }
 
     function logout() {
@@ -712,6 +739,78 @@
         } catch (err) {
             document.getElementById('courses-list').innerHTML = '<div class="empty-state"><p style="color:var(--red);">Failed to load.</p></div>';
         }
+    }
+
+    // ── Devis ──
+    let devisData = [];
+
+    async function adminLoadDevis() {
+        try {
+            const res = await fetch('/api/devi', { headers: { 'Authorization': 'Bearer ' + adminToken } });
+            const data = await res.json();
+            devisData = data.devis || [];
+            renderDevis();
+        } catch (err) {
+            document.getElementById('devis-list').innerHTML = '<div class="empty-state"><p style="color:var(--red);">Failed to load.</p></div>';
+        }
+    }
+
+    function renderDevis() {
+        const container = document.getElementById('devis-list');
+        if (devisData.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">🪷</div><p>No devis yet.</p></div>';
+            return;
+        }
+        container.innerHTML = devisData.map(d => `
+            <div class="course-row">
+                <div class="course-left">
+                    <div class="course-icon">🪷</div>
+                    <div class="course-info">
+                        <div class="title">${esc(d.name)}</div>
+                    </div>
+                </div>
+                <div class="consult-right">
+                    <div class="action-group">
+                        <button class="action-btn action-btn-edit" onclick="editDevi(${d.id}, '${esc(d.name)}')">✏ Edit</button>
+                        <button class="action-btn action-btn-delete" onclick="deleteDevi(${d.id})">✕</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    document.getElementById('devi-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('devi-name').value.trim();
+        if (!name) return;
+        await fetch('/api/devi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+            body: JSON.stringify({ name }),
+        });
+        document.getElementById('devi-name').value = '';
+        adminLoadDevis();
+    });
+
+    async function editDevi(id, oldName) {
+        const name = prompt('Edit Devi name', oldName);
+        if (!name || !name.trim()) return;
+        await fetch('/api/devi', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+            body: JSON.stringify({ id, name: name.trim() }),
+        });
+        adminLoadDevis();
+    }
+
+    async function deleteDevi(id) {
+        if (!confirm('Delete this Devi?')) return;
+        await fetch('/api/devi', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken },
+            body: JSON.stringify({ id }),
+        });
+        adminLoadDevis();
     }
 
     function renderCourses() {

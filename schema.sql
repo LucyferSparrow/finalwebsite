@@ -26,3 +26,9 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
   token TEXT PRIMARY KEY,
   created_at TEXT DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS devis (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  created_at TEXT DEFAULT (datetime('now'))
+);

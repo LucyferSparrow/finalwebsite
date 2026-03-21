@@ -93,10 +93,52 @@
                     Generate Chart <i class="fa-solid fa-sparkles"></i>
                 </button>
                 <button type="button" id="import-btn" class="primary-btn" style="background: rgba(139,95,191,0.3); border: 1px solid rgba(139,95,191,0.4);" onclick="document.getElementById('import-file').click()">
-                    Import Chart <i class="fa-solid fa-file-import"></i>
+                    Open file<i class="fa-solid fa-file-import"></i>
+                </button>
+                <button type="button" id="open-prashna-btn" class="primary-btn" style="background: rgba(56,189,248,0.18); border: 1px solid rgba(56,189,248,0.35);">
+                    Open a prashna kundli <i class="fa-solid fa-scroll"></i>
                 </button>
                 <input type="file" id="import-file" accept=".arya" style="display:none">
             </form>
+        </section>
+
+        <section id="prashna-section" class="glass-panel prashna-section hidden">
+            <h2 class="section-title"><i class="fa-solid fa-yin-yang"></i> Prashna System</h2>
+
+            <div class="prashna-controls">
+                <label for="random-prashna-type">Prashna Prompt</label>
+                <select id="random-prashna-type">
+                    <option value="ashtakavarga">Ashtakavarga Prashna</option>
+                    <option value="kundli">Kundli Prashna</option>
+                    <option value="devi">Devi Prashna</option>
+                </select>
+            </div>
+
+            <button type="button" id="generate-prashna-btn" class="primary-btn">
+                Generate Prashna <i class="fa-solid fa-dice"></i>
+            </button>
+
+            <div id="prashna-output" class="prashna-output hidden">
+                <div id="prashna-summary" class="prashna-summary"></div>
+
+                <div id="ashtakavarga-output" class="prashna-card hidden">
+                    <h4>Ashtakavarga Random Scores</h4>
+                    <div id="ashtakavarga-grid" class="ashtakavarga-grid"></div>
+                </div>
+
+                <div id="kundli-prashna-output" class="prashna-card hidden">
+                    <h4>Kundli Prashna (Single Placement)</h4>
+                    <div id="kundli-prashna-values" class="kundli-prashna-values"></div>
+                </div>
+
+                <div id="devi-prashna-output" class="prashna-card hidden">
+                    <h4>Devi Prashna</h4>
+                    <p id="devi-prashna-description"></p>
+                    <div class="devi-range-note">
+                        Suggested input range: Tridevi, Ashtayogini, Mahavidya, Shaktipeeth Devis.
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- Loader -->
@@ -109,7 +151,7 @@
 
             <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
                 <button type="button" id="export-btn" class="primary-btn" style="background: rgba(139,95,191,0.3); border: 1px solid rgba(139,95,191,0.4); padding: 10px 20px; font-size: 0.9rem;">
-                    Export Chart <i class="fa-solid fa-file-export"></i>
+                    Save file <i class="fa-solid fa-file-export"></i>
                 </button>
             </div>
 
