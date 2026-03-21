@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const a = document.createElement('a');
         const safeName = (b.name || 'chart').replace(/[^a-zA-Z0-9]/g, '_');
         a.href = url;
-        a.download = `${safeName}_kundali.arya`;
+        a.download = `${safeName}.arya`;
         a.click();
         URL.revokeObjectURL(url);
     });
